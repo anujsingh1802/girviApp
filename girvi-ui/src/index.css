@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-background: #f5f5f5;
+    --color-card: #ffffff;
+    --color-textMain: #1f2937;
+    --color-textMuted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-body-bg: #e5e7eb;
+  }
+  .dark {
+    --color-background: #121212;
+    --color-card: #1e1e1e;
+    --color-textMain: #f9fafb;
+    --color-textMuted: #9ca3af;
+    --color-border: #374151;
+    --color-body-bg: #000000;
+  }
+
+  body {
+    @apply bg-[var(--color-body-bg)] min-h-screen text-textMain antialiased transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .app-container {
+    @apply w-full h-screen bg-background relative overflow-hidden flex flex-col transition-colors duration-300;
+  }
+  .views-container {
+    @apply flex-1 relative overflow-x-hidden overflow-y-auto bg-background pb-28 pt-0 transition-colors duration-300;
+  }
+  .view-padding {
+    @apply px-5 md:px-12 lg:px-24 w-full;
+  }
+  .card {
+    @apply bg-card rounded-[16px] p-5 shadow-soft border border-[var(--color-border)] transition-colors duration-300;
+  }
+  .icon-blob {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center;
+  }
+  .btn {
+    @apply flex-1 py-3.5 px-4 rounded-xl font-semibold text-[1rem] flex items-center justify-center gap-2 transition-transform active:scale-95;
+  }
+  .input-field {
+    @apply w-full p-3.5 rounded-xl border border-[var(--color-border)] bg-card text-textMain text-[1rem] outline-none transition-colors focus:border-primary placeholder-textMuted;
+  }
+}
+
+/* Material symbols global style */
+.icon {
+   font-family: 'Material Symbols Rounded';
+   font-weight: normal;
+   font-style: normal;
+   font-size: 24px;
+   line-height: 1;
+   letter-spacing: normal;
+   text-transform: none;
+   display: inline-block;
+   white-space: nowrap;
+   word-wrap: normal;
+   direction: ltr;
+   -webkit-font-feature-settings: 'liga';
+   font-feature-settings: 'liga';
+   -webkit-font-smoothing: antialiased;
+   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.icon.outlined {
+   font-variation-settings: 'FILL' 0;
+}
+
+/* Custom Scrollbar */
+.views-container::-webkit-scrollbar {
+  width: 8px;
+}
+.views-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.views-container::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 10px;
+}
