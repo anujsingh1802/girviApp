@@ -16,7 +16,7 @@ const Home = ({ navigateTo }) => {
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-2 text-white">
               <span className="icon text-accentYellow md:text-3xl">diamond</span>
-              <h1 className="text-xl md:text-2xl font-bold tracking-wide">GIRVI <span className="font-normal opacity-90 text-sm md:text-base">(गिरवी)</span></h1>
+              <h1 className="text-xl md:text-2xl font-bold tracking-wide">GIRVI <span className="font-normal opacity-90 text-sm md:text-base">(सुनर आभूषण)</span></h1>
             </div>
             <span className="icon text-white cursor-pointer hover:text-gray-300 transition-colors md:text-3xl">notifications</span>
           </div>
