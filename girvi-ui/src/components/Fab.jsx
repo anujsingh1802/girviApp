@@ -9,11 +9,11 @@ const Fab = ({ isFabOpen, setIsFabOpen, navigateTo }) => {
           <span className="bg-primary-dark text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-transform group-hover:scale-105">New Customer</span>
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-soft transition-transform group-hover:scale-105"><span className="icon">person_add</span></div>
         </div>
-        <div className="flex items-center gap-3 cursor-pointer group">
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { navigateTo('add-payment'); setIsFabOpen(false); }}>
           <span className="bg-primary-dark text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-transform group-hover:scale-105">New Payment</span>
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-soft transition-transform group-hover:scale-105"><span className="icon">payments</span></div>
         </div>
-        <div className="flex items-center gap-3 cursor-pointer group">
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { navigateTo('add-loan'); setIsFabOpen(false); }}>
           <span className="bg-primary-dark text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-md transition-transform group-hover:scale-105">New Loan</span>
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-soft transition-transform group-hover:scale-105"><span className="icon">diamond</span></div>
         </div>

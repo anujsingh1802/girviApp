@@ -1,44 +1,66 @@
 const Loan = require("../models/Loan");
 const Transaction = require("../models/Transaction");
 const asyncHandler = require("../utils/asyncHandler");
-const { sendWhatsAppMessage } = require("../utils/whatsapp");
+const { calculateLoanSnapshot } = require("../services/loanCalculator");
+const { createLedgerRecord } = require("../services/ledgerService");
 
 const pay = asyncHandler(async (req, res) => {
-  const { loanId, amount } = req.body;
+  const { loanId, amount, releaseDate } = req.body;
   if (!loanId || !amount) {
     return res.status(400).json({ message: "loanId and amount are required" });
   }
 
-  const loan = await Loan.findById(loanId).populate("userId", "phone");
+  const loan = await Loan.findById(loanId).populate("userId", "phone name");
   if (!loan) return res.status(404).json({ message: "Loan not found" });
 
   if (loan.userId._id.toString() !== req.user._id.toString()) {
     return res.status(403).json({ message: "Forbidden" });
   }
 
-  const txn = await Transaction.create({
-    userId: req.user._id,
-    loanId,
-    amount,
-    type: "payment",
-    status: "success"
+  const previousPayments = await Transaction.find({ loanId: loan._id, type: "payment", status: "success" }).lean();
+  
+  const snapshot = calculateLoanSnapshot({
+    principal: loan.loanAmount,
+    interestRate: loan.interestRate,
+    duration: loan.duration || loan.durationMonths || 1,
+    durationUnit: loan.durationUnit || 'months',
+    interestType: loan.interestType || 'simple',
+    loanDate: loan.loanDate || loan.startDate || loan.createdAt,
+    payments: [...previousPayments.map(p => ({ amount: p.amount, paymentDate: p.createdAt })), { amount, paymentDate: releaseDate || new Date() }]
   });
 
-  const payments = await Transaction.aggregate([
-    { $match: { loanId: loan._id, type: "payment", status: "success" } },
-    { $group: { _id: "$loanId", total: { $sum: "$amount" } } }
-  ]);
+  const txn = await Transaction.create({
+    userId: req.user._id,
+    loanId: loan._id,
+    amount,
+    type: "payment",
+    status: "success",
+    createdAt: releaseDate || new Date()
+  });
 
-  const totalPaid = payments[0] ? payments[0].total : 0;
-  if (loan.totalPayable > 0 && totalPaid >= loan.totalPayable) {
-    loan.status = "completed";
-    await loan.save();
-  } else if (loan.endDate && loan.status === "active" && loan.endDate < new Date()) {
-    loan.status = "defaulted";
-    await loan.save();
+  if (snapshot.remainingBalance <= 0 && loan.status !== 'completed') {
+    loan.status = 'completed';
+  } else if (snapshot.isOverdue) {
+    loan.status = 'defaulted';
+  } else if (loan.status !== 'active') {
+    loan.status = 'active';
   }
 
-  sendWhatsAppMessage(loan.userId.phone, `? Payment of ?${amount} received successfully.`);
+  loan.totalPayable = snapshot.totalPayable;
+  if (!loan.duration) {
+    loan.duration = loan.durationMonths || 1;
+  }
+  await loan.save();
+
+  await createLedgerRecord({
+    customer: loan.userId._id,
+    loan: loan._id,
+    transactionRef: txn._id,
+    transactionDate: txn.createdAt,
+    description: `Loan payment from ${loan.userId.name}`,
+    credit: txn.amount,
+    source: 'loan-payment'
+  });
 
   res.json({ transaction: txn, loan });
 });
@@ -48,4 +70,69 @@ const history = asyncHandler(async (req, res) => {
   res.json(txns);
 });
 
-module.exports = { pay, history };
+const publicPay = asyncHandler(async (req, res) => {
+  const { loanId, amount, releaseDate } = req.body;
+  if (!loanId || !amount) {
+    return res.status(400).json({ message: "loanId and amount are required" });
+  }
+
+  const loan = await Loan.findById(loanId).populate("userId", "phone name");
+  if (!loan) return res.status(404).json({ message: "Loan not found" });
+
+  const previousPayments = await Transaction.find({ loanId: loan._id, type: "payment", status: "success" }).lean();
+  
+  const snapshot = calculateLoanSnapshot({
+    principal: loan.loanAmount,
+    interestRate: loan.interestRate,
+    duration: loan.duration || loan.durationMonths || 1,
+    durationUnit: loan.durationUnit || 'months',
+    interestType: loan.interestType || 'simple',
+    loanDate: loan.loanDate || loan.startDate || loan.createdAt,
+    payments: [...previousPayments.map(p => ({ amount: p.amount, paymentDate: p.createdAt })), { amount, paymentDate: releaseDate ? new Date(releaseDate) : new Date() }]
+  });
+
+  const txn = await Transaction.create({
+    userId: loan.userId._id,
+    loanId: loan._id,
+    amount,
+    type: "payment",
+    status: "success",
+    createdAt: releaseDate ? new Date(releaseDate) : new Date()
+  });
+
+  if (snapshot.remainingBalance <= 0 && loan.status !== 'completed') {
+    loan.status = 'completed';
+  } else if (snapshot.isOverdue) {
+    loan.status = 'defaulted';
+  } else if (loan.status !== 'active') {
+    loan.status = 'active';
+  }
+
+  loan.totalPayable = snapshot.totalPayable;
+  if (!loan.duration) {
+    loan.duration = loan.durationMonths || 1;
+  }
+  await loan.save();
+
+  await createLedgerRecord({
+    customer: loan.userId._id,
+    loan: loan._id,
+    transactionRef: txn._id,
+    transactionDate: txn.createdAt,
+    description: `Public Loan payment from ${loan.userId.name}`,
+    credit: txn.amount,
+    source: 'loan-payment'
+  });
+
+  res.json({ transaction: txn, loan });
+});
+
+const publicHistory = asyncHandler(async (req, res) => {
+  const txns = await Transaction.find()
+    .populate("userId", "name phone")
+    .populate("loanId", "loanAmount status")
+    .sort({ createdAt: -1 });
+  res.json(txns);
+});
+
+module.exports = { pay, history, publicPay, publicHistory };

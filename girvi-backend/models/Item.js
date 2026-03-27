@@ -8,6 +8,8 @@ const itemSchema = new mongoose.Schema(
     description: { type: String, trim: true },
     images: [{ type: String }],
     estimatedValue: { type: Number, required: true, min: 0 },
+    netWeight: { type: Number, default: 0 },
+    grossWeight: { type: Number, default: 0 },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
   },
   { timestamps: true }

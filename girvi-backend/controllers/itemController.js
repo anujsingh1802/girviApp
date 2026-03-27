@@ -43,5 +43,9 @@ const updateStatus = asyncHandler(async (req, res) => {
 
   res.json(item);
 });
+const publicGetAllItems = asyncHandler(async (req, res) => {
+  const items = await Item.find().populate("userId", "name email phone").sort({ createdAt: -1 });
+  res.json(items);
+});
 
-module.exports = { addItem, getUserItems, getAllItems, updateStatus };
+module.exports = { addItem, getUserItems, getAllItems, updateStatus, publicGetAllItems };
