@@ -64,9 +64,15 @@ const PORT = process.env.PORT || 5000;
 connectDB()
   .then(() => {
     startReminderCron();
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
   .catch((err) => {
-    console.error("DB connection failed:", err.message);
+    console.error("❌ BACKEND CRASH AT STARTUP:");
+    console.error("Reason:", err.message);
+    if (err.message.includes("MONGO_URI")) {
+      console.error("TIP: Ensure MONGO_URI is set in your Render environment variables.");
+    } else if (err.message.includes("whitelist")) {
+      console.error("TIP: Go to MongoDB Atlas -> Network Access and add '0.0.0.0/0' to allow Render to connect.");
+    }
     process.exit(1);
   });
