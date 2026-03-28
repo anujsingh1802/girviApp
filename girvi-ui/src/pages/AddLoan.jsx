@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { API_ENDPOINTS } from '../api';
+import API_BASE_URL, { API_ENDPOINTS } from '../api';
 
 const AddLoan = ({ navigateTo }) => {
   const [customers, setCustomers] = useState([]);
@@ -61,7 +61,7 @@ const AddLoan = ({ navigateTo }) => {
     data.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:5000/api/upload", {
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
         method: "POST",
         body: data,
       });

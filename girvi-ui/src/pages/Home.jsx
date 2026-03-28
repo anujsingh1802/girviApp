@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_ENDPOINTS } from '../api';
+import API_BASE_URL, { API_ENDPOINTS } from '../api';
 
 const HeaderStatsRow = ({ label, value, colorClass }) => (
   <div className="flex justify-between items-center w-full mb-1">
@@ -107,7 +107,7 @@ const Home = ({ navigateTo }) => {
   const handleIntervalChange = async (e) => {
     const newVal = Number(e.target.value);
     setIntervalDays(newVal);
-    await fetch("http://localhost:5000/api/notifications/settings", {
+    await fetch(`${API_BASE_URL}/api/notifications/settings`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ intervalDays: newVal })
@@ -116,7 +116,7 @@ const Home = ({ navigateTo }) => {
 
   const markRead = async (id) => {
     setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-    await fetch(`http://localhost:5000/api/notifications/${id}/read`, { method: "PUT" });
+    await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, { method: "PUT" });
   };
 
   const totalLoans = loans.length;

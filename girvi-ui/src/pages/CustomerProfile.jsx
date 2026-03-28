@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_ENDPOINTS } from '../api';
+import API_BASE_URL, { API_ENDPOINTS } from '../api';
 
 const CustomerProfile = ({ navigateTo, customerId }) => {
   const [data, setData] = useState(null);
@@ -53,7 +53,7 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
           onConfirm: async () => {
             try {
               setLoading(true);
-              const res = await fetch(`http://localhost:5000/api/auth/customer/${customerId}`, { method: 'DELETE' });
+              const res = await fetch(`${API_BASE_URL}/api/auth/customer/${customerId}`, { method: 'DELETE' });
               if (res.ok) {
                 alert("Customer deleted successfully.");
                 navigateTo('customers');
@@ -81,12 +81,12 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
       onConfirm: async () => {
         try {
           setLoading(true);
-          const res = await fetch(`http://localhost:5000/api/loan/${loanId}`, { method: 'DELETE' });
+          const res = await fetch(`${API_BASE_URL}/api/loan/${loanId}`, { method: 'DELETE' });
           if (res.ok) {
             alert("Loan deleted successfully.");
-            const refresh = await fetch(`http://localhost:5000/api/auth/customer/${customerId}`);
+            const refresh = await fetch(`${API_BASE_URL}/api/auth/customer/${customerId}`);
             const json = await refresh.json();
-            const sumRes = await fetch(`http://localhost:5000/api/auth/user/${customerId}/summary`);
+            const sumRes = await fetch(`${API_BASE_URL}/api/auth/user/${customerId}/summary`);
             if (sumRes.ok) {
               const sumJson = await sumRes.json();
               setUserSummary(sumJson);
