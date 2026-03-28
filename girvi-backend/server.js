@@ -19,16 +19,27 @@ const app = express();
 
 initCloudinary();
 
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173,http://localhost:5174")
+const allowedOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
+
+const defaultOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://girvi-app-9a2y.vercel.app",
+];
+
+const allAllowedOrigins = [...new Set([...allowedOrigins, ...defaultOrigins])];
 
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, "");
+      if (allAllowedOrigins.includes(cleanOrigin)) return callback(null, true);
+      
+      console.warn(`Blocked CORS request from origin: ${origin}`);
       return callback(new Error("CORS not allowed"));
     },
     credentials: true
