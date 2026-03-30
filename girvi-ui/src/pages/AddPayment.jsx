@@ -40,7 +40,7 @@ const AddPayment = ({ navigateTo }) => {
       const dateText = new Date(l.loanDate || l.createdAt).toLocaleDateString();
       return {
         id: l._id,
-        label: `${l.userId?.name || "Customer"} • ₹${l.loanAmount} • ${itemsText} • ${dateText}`,
+        label: `${l.userId?.name || "Customer"} • ₹${l.loanAmount} loan • ₹${l.remaining || 0} remaining • ${itemsText} • ${dateText}`,
       };
     });
   }, [loans]);
