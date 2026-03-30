@@ -33,10 +33,16 @@ const AddPayment = ({ navigateTo }) => {
   }, []);
 
   const loanOptions = useMemo(() => {
-    return loans.map((l) => ({
-      id: l._id,
-      label: `${l.userId?.name || "Customer"} • ₹${l.loanAmount} • ${l.status}`,
-    }));
+    return loans.map((l) => {
+      const itemsText = l.items && l.items.length > 0
+        ? l.items.map(i => i.itemName).join(', ')
+        : (l.itemId?.itemName || "Item");
+      const dateText = new Date(l.loanDate || l.createdAt).toLocaleDateString();
+      return {
+        id: l._id,
+        label: `${l.userId?.name || "Customer"} • ₹${l.loanAmount} • ${itemsText} • ${dateText}`,
+      };
+    });
   }, [loans]);
 
   const selectedLoan = useMemo(() => loans.find((l) => l._id === formData.loanId), [loans, formData.loanId]);
