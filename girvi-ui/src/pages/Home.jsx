@@ -260,7 +260,7 @@ const Home = ({ navigateTo }) => {
             { label: 'Customers', val: `${customersCount}`, icon: 'group', onClick: () => navigateTo('customers') },
             { label: 'Total Loans', val: `${totalLoans}`, icon: 'description', onClick: () => navigateTo('loans') },
             { label: 'Tenure Expired', val: `${tenureExpired}`, icon: 'hourglass_empty', onClick: () => navigateTo('loans') },
-            { label: 'Closed Loans', val: `${closedLoans}`, icon: 'cancel', onClick: () => navigateTo('loans') }
+            { label: 'Closed Loans', val: `${closedLoans}`, icon: 'cancel', onClick: () => navigateTo('loans', { filterTab: 'Completed' }) }
           ].map(stat => (
             <div key={stat.label} onClick={stat.onClick} className="card flex items-center gap-4 !p-4 hover:shadow-md transition-shadow cursor-pointer">
               <div className="w-12 h-12 rounded-[14px] bg-primary-light/10 text-primary-dark flex items-center justify-center shrink-0">

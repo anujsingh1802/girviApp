@@ -20,6 +20,7 @@ export default function App() {
     return localStorage.getItem('girvi_auth_pin') === 'true';
   });
   const [currentView, setCurrentView] = useState('home');
+  const [navParams, setNavParams] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -36,8 +37,9 @@ export default function App() {
     }
   }, [isDark]);
 
-  const navigateTo = (view) => {
+  const navigateTo = (view, params = null) => {
     setCurrentView(view);
+    setNavParams(params);
     setIsFabOpen(false);
   };
 
@@ -64,7 +66,7 @@ export default function App() {
           {currentView === 'add-customer' && <AddCustomer navigateTo={navigateTo} />}
           {currentView === 'add-loan' && <AddLoan navigateTo={navigateTo} />}
           {currentView === 'add-payment' && <AddPayment navigateTo={navigateTo} />}
-          {currentView === 'loans' && <Loans navigateTo={navigateTo} />}
+          {currentView === 'loans' && <Loans navigateTo={navigateTo} navParams={navParams} />}
           {currentView === 'dues' && <Dues navigateTo={navigateTo} setSelectedCustomer={setSelectedCustomer} />}
           {currentView === 'account' && <Account navigateTo={navigateTo} isDark={isDark} setIsDark={setIsDark} />}
           {currentView === 'report' && <Report navigateTo={navigateTo} />}

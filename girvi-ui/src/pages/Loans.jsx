@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { API_ENDPOINTS } from '../api';
 
-const Loans = ({ navigateTo }) => {
+const Loans = ({ navigateTo, navParams }) => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterTab, setFilterTab] = useState('All');
+  const [filterTab, setFilterTab] = useState(navParams?.filterTab || 'All');
   const [error, setError] = useState('');
 
   useEffect(() => {
