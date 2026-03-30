@@ -199,7 +199,9 @@ const AddPayment = ({ navigateTo }) => {
                       <span className="text-textMain font-semibold">₹{remainingAfter}</span>
                     </div>
                     <div className="mt-2 text-[11px] text-gray-400">
-                      Based on {interestBreakdown.fullMonths} full months + {interestBreakdown.extraDays} extra days (30‑day month).
+                      {selectedLoan.interestType === 'emi' 
+                        ? `Fixed EMI Schedule (${selectedLoan.duration} ${selectedLoan.durationUnit}).`
+                        : `Based on ${interestBreakdown.fullMonths} full months + ${interestBreakdown.extraDays} extra days (30‑day month).`}
                     </div>
                   </>
                 )}
