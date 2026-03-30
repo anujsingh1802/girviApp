@@ -33,7 +33,9 @@ const Loans = ({ navigateTo }) => {
     return loans.filter((loan) => {
       const name = loan.userId?.name?.toLowerCase() || "";
       const phone = loan.userId?.phone?.toLowerCase() || "";
-      const item = loan.itemId?.itemName?.toLowerCase() || "";
+      const item = loan.items && loan.items.length > 0 
+        ? loan.items.map(i => i.itemName?.toLowerCase()).join(" ")
+        : (loan.itemId?.itemName?.toLowerCase() || "");
       return name.includes(q) || phone.includes(q) || item.includes(q);
     });
   }, [loans, search]);
@@ -89,7 +91,11 @@ const Loans = ({ navigateTo }) => {
               <div className="flex flex-col gap-2 text-sm text-textMuted">
                 <div className="flex items-center gap-2">
                   <span className="icon text-base">diamond</span>
-                  <span>{loan.itemId?.itemName || "Item"}</span>
+                  <span className="truncate max-w-[150px] md:max-w-[200px]" title={loan.items && loan.items.length > 0 ? loan.items.map(i => i.itemName).join(", ") : (loan.itemId?.itemName || "Item")}>
+                    {loan.items && loan.items.length > 0
+                      ? loan.items.map(i => i.itemName).join(", ")
+                      : (loan.itemId?.itemName || "Item")}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="icon text-base">payments</span>

@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const loanSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    itemId: { type: mongoose.Schema.Types.ObjectId, ref: "Item", required: true },
+    itemId: { type: mongoose.Schema.Types.ObjectId, ref: "Item" }, // Kept for backward compatibility
+    items: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
     loanAmount: { type: Number, required: true, min: 0 },
     interestRate: { type: Number, required: true, min: 0 },
     duration: { type: Number, required: true, min: 1 },

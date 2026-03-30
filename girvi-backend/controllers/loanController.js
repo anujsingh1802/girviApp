@@ -36,6 +36,7 @@ const applyLoan = asyncHandler(async (req, res) => {
 const getUserLoans = asyncHandler(async (req, res) => {
   const loans = await Loan.find({ userId: req.user._id })
     .populate("itemId", "itemName category")
+    .populate("items", "itemName category")
     .sort({ createdAt: -1 });
   res.json(loans);
 });
@@ -44,6 +45,7 @@ const getAllLoans = asyncHandler(async (req, res) => {
   const loans = await Loan.find()
     .populate("userId", "name email phone")
     .populate("itemId", "itemName category")
+    .populate("items", "itemName category")
     .sort({ createdAt: -1 });
   res.json(loans);
 });
@@ -105,26 +107,41 @@ const approveLoan = asyncHandler(async (req, res) => {
 });
 
 const publicApplyLoan = asyncHandler(async (req, res) => {
-  const { customerId, itemName, category, description, estimatedValue, loanAmount, disbursedAmount, interestRate, duration, durationUnit, interestType, loanDate, netWeight, grossWeight, images } = req.body;
+  const { customerId, items, itemName, category, description, estimatedValue, loanAmount, disbursedAmount, interestRate, duration, durationUnit, interestType, loanDate, netWeight, grossWeight, images } = req.body;
 
-  if (!customerId || !itemName || !category || !loanAmount || !interestRate || !duration) {
-    return res.status(400).json({ message: "customerId, itemName, category, loanAmount, interestRate, duration are required" });
+  if (!customerId || !loanAmount || !interestRate || !duration) {
+    return res.status(400).json({ message: "customerId, loanAmount, interestRate, duration are required" });
   }
 
   const user = await User.findById(customerId);
   if (!user) return res.status(404).json({ message: "Customer not found" });
 
-  const item = await Item.create({
-    userId: customerId,
-    itemName,
-    category,
-    description,
-    images: images && images.length > 0 ? images : [],
-    estimatedValue: typeof estimatedValue === "number" ? estimatedValue : loanAmount,
-    netWeight: netWeight ? Number(netWeight) : 0,
-    grossWeight: grossWeight ? Number(grossWeight) : 0,
-    status: "pending"
-  });
+  const itemsArray = items && items.length > 0 ? items : [{ itemName, category, description, estimatedValue, netWeight, grossWeight, images }];
+
+  if (!itemsArray[0].itemName || !itemsArray[0].category) {
+    return res.status(400).json({ message: "itemName and category are required for at least one item" });
+  }
+
+  const createdItemIds = [];
+  let totalNet = 0;
+  let totalGross = 0;
+
+  for (const itemData of itemsArray) {
+    const item = await Item.create({
+      userId: customerId,
+      itemName: itemData.itemName,
+      category: itemData.category,
+      description: itemData.description,
+      images: itemData.images && itemData.images.length > 0 ? itemData.images : [],
+      estimatedValue: typeof itemData.estimatedValue === "number" ? itemData.estimatedValue : (loanAmount / itemsArray.length),
+      netWeight: itemData.netWeight ? Number(itemData.netWeight) : 0,
+      grossWeight: itemData.grossWeight ? Number(itemData.grossWeight) : 0,
+      status: "pending"
+    });
+    totalNet += item.netWeight;
+    totalGross += item.grossWeight;
+    createdItemIds.push(item._id);
+  }
 
   let parsedDate = loanDate ? new Date(loanDate) : new Date();
 
@@ -149,14 +166,15 @@ const publicApplyLoan = asyncHandler(async (req, res) => {
 
   const loan = await Loan.create({
     userId: customerId,
-    itemId: item._id,
+    itemId: createdItemIds[0], // For backward compatibility
+    items: createdItemIds,
     loanAmount: dummyLoan.loanAmount,
     interestRate: dummyLoan.interestRate,
     duration: dummyLoan.duration,
     durationUnit: dummyLoan.durationUnit,
     interestType: dummyLoan.interestType,
-    netWeight: item.netWeight,
-    grossWeight: item.grossWeight,
+    netWeight: netWeight ? Number(netWeight) : totalNet,
+    grossWeight: grossWeight ? Number(grossWeight) : totalGross,
     status: "active",
     loanDate: dummyLoan.loanDate,
     startDate: dummyLoan.loanDate,
@@ -192,6 +210,7 @@ const getAllLoansPublic = asyncHandler(async (req, res) => {
   const loans = await Loan.find()
     .populate("userId", "name email phone")
     .populate("itemId", "itemName category")
+    .populate("items", "itemName category")
     .sort({ createdAt: -1 });
 
   const rawPayments = await Transaction.find({ type: "payment", status: "success" }).lean();
@@ -244,16 +263,13 @@ const getDashboardSummary = asyncHandler(async (req, res) => {
     pipeline.push({
       $lookup: {
         from: 'items',
-        localField: 'itemId',
+        localField: 'items',
         foreignField: '_id',
-        as: 'itemDetails'
+        as: 'itemDetailsArray'
       }
     });
     pipeline.push({
-      $unwind: { path: '$itemDetails', preserveNullAndEmptyArrays: false }
-    });
-    pipeline.push({
-      $match: { 'itemDetails.category': category }
+      $match: { 'itemDetailsArray.category': category }
     });
   }
 
@@ -347,7 +363,9 @@ const deleteLoan = asyncHandler(async (req, res) => {
   }
 
   await Transaction.deleteMany({ loanId: id });
-  if (loan.itemId) {
+  if (loan.items && loan.items.length > 0) {
+    await Item.deleteMany({ _id: { $in: loan.items } });
+  } else if (loan.itemId) {
     await Item.findByIdAndDelete(loan.itemId);
   }
   await loan.deleteOne();

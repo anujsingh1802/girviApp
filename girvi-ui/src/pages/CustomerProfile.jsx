@@ -234,13 +234,36 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                 <div key={loan._id} className="card !p-5 border border-borderBase flex flex-col gap-3 relative">
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-sm font-bold block text-textMain bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md w-max mb-2">
-                        {loan.itemId?.itemName || "Item"} • [{loan.itemId?.category || "Unknown"}]
-                      </span>
-                      <span className="text-xs text-textMuted block">Collateral Value: ₹{loan.itemId?.estimatedValue || 0}</span>
-                      <span className="text-xs text-textMuted block mt-0.5">Interest: {loan.interestRate}% ({loan.interestType})</span>
-                      {(Number(loan.itemId?.netWeight) > 0 || Number(loan.itemId?.grossWeight) > 0) && (
-                         <span className="text-xs text-textMuted block mt-0.5">NW: {loan.itemId.netWeight}g / GW: {loan.itemId.grossWeight}g</span>
+                      {loan.items && loan.items.length > 0 ? (
+                        <>
+                          <div className="flex flex-col gap-2 mb-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                            {loan.items.map((it, idx) => (
+                               <div key={it._id || idx} className="bg-gray-50/50 dark:bg-gray-900/20 p-2 rounded-lg border border-borderBase/50">
+                                 <span className="text-sm font-bold block text-textMain mb-1">
+                                   {idx + 1}. {it.itemName || "Item"} <span className="text-textMuted font-normal text-xs ml-1">[{it.category || "Unknown"}]</span>
+                                 </span>
+                                 <div className="flex flex-wrap gap-2 items-center">
+                                   <span className="text-[11px] text-textMuted bg-background px-1.5 py-0.5 rounded border border-borderBase">₹{it.estimatedValue || 0}</span>
+                                   {(Number(it.netWeight) > 0 || Number(it.grossWeight) > 0) && (
+                                     <span className="text-[11px] text-textMuted bg-background px-1.5 py-0.5 rounded border border-borderBase">NW: {it.netWeight}g / GW: {it.grossWeight}g</span>
+                                   )}
+                                 </div>
+                               </div>
+                            ))}
+                          </div>
+                          <span className="text-xs text-textMuted block mt-2">Interest: {loan.interestRate}% ({loan.interestType})</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm font-bold block text-textMain bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md w-max mb-2">
+                            {loan.itemId?.itemName || "Item"} • [{loan.itemId?.category || "Unknown"}]
+                          </span>
+                          <span className="text-xs text-textMuted block">Collateral Value: ₹{loan.itemId?.estimatedValue || 0}</span>
+                          <span className="text-xs text-textMuted block mt-0.5">Interest: {loan.interestRate}% ({loan.interestType})</span>
+                          {(Number(loan.itemId?.netWeight) > 0 || Number(loan.itemId?.grossWeight) > 0) && (
+                             <span className="text-xs text-textMuted block mt-0.5">NW: {loan.itemId.netWeight}g / GW: {loan.itemId.grossWeight}g</span>
+                          )}
+                        </>
                       )}
                     </div>
                     <div className="flex items-center gap-2 h-min">
@@ -259,9 +282,9 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                     </div>
                   </div>
                   
-                  {loan.itemId?.images && loan.itemId.images.length > 0 && (
+                  {((loan.items && loan.items.flatMap(i => i.images || [])) || loan.itemId?.images || []).length > 0 && (
                     <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
-                      {loan.itemId.images.map((img, idx) => (
+                      {((loan.items && loan.items.flatMap(i => i.images || [])) || loan.itemId?.images || []).map((img, idx) => (
                         <a key={idx} href={img} target="_blank" rel="noopener noreferrer" className="shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-borderBase shadow-sm hover:opacity-80 transition-opacity">
                            {img.endsWith('.pdf') ? (
                              <div className="w-full h-full flex items-center justify-center bg-gray-50 text-red-500">

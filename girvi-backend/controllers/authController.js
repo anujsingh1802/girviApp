@@ -218,7 +218,7 @@ const getCustomerProfile = asyncHandler(async (req, res) => {
 
   const items = await Item.find({ userId: id });
   const transactions = await Transaction.find({ userId: id }).sort({ createdAt: -1 });
-  const rawLoans = await Loan.find({ userId: id }).populate("itemId");
+  const rawLoans = await Loan.find({ userId: id }).populate("itemId").populate("items");
 
   const paymentMap = transactions.filter(t => t.type === "payment" && t.status === "success").reduce((acc, txn) => {
     const key = String(txn.loanId);

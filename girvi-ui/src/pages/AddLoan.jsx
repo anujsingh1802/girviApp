@@ -5,14 +5,20 @@ const AddLoan = ({ navigateTo }) => {
   const [customers, setCustomers] = useState([]);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [uploadingDoc, setUploadingDoc] = useState('');
-  const [itemImageUrl, setItemImageUrl] = useState('');
-  const [formData, setFormData] = useState({
-    customerId: '',
+  const [uploadingDocIndex, setUploadingDocIndex] = useState(null);
+  
+  const [items, setItems] = useState([{
     itemName: '',
     category: 'Gold',
     description: '',
     estimatedValue: '',
+    netWeight: '',
+    grossWeight: '',
+    images: [] // Array of image URLs
+  }]);
+
+  const [formData, setFormData] = useState({
+    customerId: '',
     loanAmount: '',
     disbursedAmount: '',
     interestRate: '',
@@ -20,8 +26,6 @@ const AddLoan = ({ navigateTo }) => {
     durationUnit: 'months',
     interestType: 'simple',
     loanDate: new Date().toISOString().slice(0, 10),
-    netWeight: '',
-    grossWeight: ''
   });
 
   useEffect(() => {
@@ -52,11 +56,11 @@ const AddLoan = ({ navigateTo }) => {
     }));
   }, [customers]);
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = async (index, e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setUploadingDoc('item');
+    setUploadingDocIndex(index);
     const data = new FormData();
     data.append("file", file);
 
@@ -67,7 +71,9 @@ const AddLoan = ({ navigateTo }) => {
       });
       const result = await res.json();
       if (res.ok) {
-        setItemImageUrl(result.url);
+        const newItems = [...items];
+        newItems[index].images = [result.url];
+        setItems(newItems);
       } else {
         alert("Upload failed: " + result.message);
       }
@@ -75,7 +81,7 @@ const AddLoan = ({ navigateTo }) => {
       console.error(err);
       alert("Error uploading file");
     } finally {
-      setUploadingDoc('');
+      setUploadingDocIndex(null);
     }
   };
 
@@ -83,23 +89,50 @@ const AddLoan = ({ navigateTo }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleItemChange = (index, e) => {
+    const newItems = [...items];
+    newItems[index][e.target.name] = e.target.value;
+    setItems(newItems);
+  };
+
+  const addNewItem = () => {
+    setItems([...items, {
+      itemName: '',
+      category: 'Gold',
+      description: '',
+      estimatedValue: '',
+      netWeight: '',
+      grossWeight: '',
+      images: []
+    }]);
+  };
+
+  const removeItem = (index) => {
+    if (items.length > 1) {
+      const newItems = items.filter((_, i) => i !== index);
+      setItems(newItems);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { customerId, itemName, category, description, estimatedValue, loanAmount, interestRate, duration, durationUnit, interestType, loanDate, netWeight, grossWeight } = formData;
-    if (!customerId || !itemName || !loanAmount || !interestRate || !duration) {
-      alert("Please fill all required fields (*)");
+    const { customerId, loanAmount, interestRate, duration, durationUnit, interestType, loanDate } = formData;
+    
+    if (!customerId || !loanAmount || !interestRate || !duration) {
+      alert("Please fill all required loan fields (*)");
       return;
+    }
+
+    const hasInvalidItem = items.some(i => !i.itemName || !i.category);
+    if (hasInvalidItem) {
+        alert("Please ensure all items have a name and category.");
+        return;
     }
 
     setSubmitting(true);
     try {
       const payload = {
         customerId,
-        itemName,
-        category,
-        description,
-        images: itemImageUrl ? [itemImageUrl] : [],
-        estimatedValue: estimatedValue ? Number(estimatedValue) : undefined,
         loanAmount: Number(loanAmount),
         disbursedAmount: formData.disbursedAmount ? Number(formData.disbursedAmount) : Number(loanAmount),
         interestRate: Number(interestRate),
@@ -107,8 +140,12 @@ const AddLoan = ({ navigateTo }) => {
         durationUnit,
         interestType,
         loanDate,
-        netWeight: netWeight ? Number(netWeight) : undefined,
-        grossWeight: grossWeight ? Number(grossWeight) : undefined
+        items: items.map(i => ({
+          ...i,
+          estimatedValue: i.estimatedValue ? Number(i.estimatedValue) : undefined,
+          netWeight: i.netWeight ? Number(i.netWeight) : undefined,
+          grossWeight: i.grossWeight ? Number(i.grossWeight) : undefined
+        }))
       };
 
       const res = await fetch(API_ENDPOINTS.LOAN_APPLY, {
@@ -152,41 +189,98 @@ const AddLoan = ({ navigateTo }) => {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-textMain mb-2">Item Name *</label>
-              <input type="text" name="itemName" value={formData.itemName} onChange={handleChange} placeholder="Gold Necklace" className="input-field" />
+            <div className="md:col-span-2 mt-4 relative">
+              <div className="flex items-center justify-between border-b border-borderBase pb-3 mb-4">
+                <h4 className="text-lg font-bold text-textMain">Collateral Items</h4>
+                <button type="button" onClick={addNewItem} className="text-sm font-bold bg-primary-light/20 text-primary-dark px-4 py-2 rounded-lg hover:bg-primary-light/40 flex items-center gap-1 transition-colors">
+                  <span className="icon text-base">add</span> Add Item
+                </button>
+              </div>
+
+              {items.map((item, index) => (
+                <div key={index} className="bg-background p-5 rounded-xl border border-borderBase mb-4 relative shadow-sm">
+                  {items.length > 1 && (
+                    <button type="button" onClick={() => removeItem(index)} className="absolute top-4 right-4 text-red-500 hover:bg-red-50 p-1.5 rounded-full transition-colors">
+                      <span className="icon text-xl text-red-500">close</span>
+                    </button>
+                  )}
+                  <h5 className="font-semibold text-textMain mb-4 flex items-center gap-2">
+                    <span className="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">{index + 1}</span>
+                    Item Detail
+                  </h5>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-textMain mb-2">Item Name *</label>
+                      <input type="text" name="itemName" value={item.itemName} onChange={(e) => handleItemChange(index, e)} placeholder="Gold Necklace" className="input-field" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-textMain mb-2">Category *</label>
+                      <select name="category" value={item.category} onChange={(e) => handleItemChange(index, e)} className="input-field">
+                        <option>Gold</option>
+                        <option>Silver</option>
+                        <option>Platinum</option>
+                        <option>Diamond</option>
+                        <option>Vehicle</option>
+                        <option>Electronics</option>
+                        <option>Property</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+
+                    {['Gold', 'Silver', 'Platinum'].includes(item.category) && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-semibold text-textMain mb-2">Net Weight (gm)</label>
+                          <input type="number" step="any" name="netWeight" value={item.netWeight} onChange={(e) => handleItemChange(index, e)} placeholder="e.g. 10.5" className="input-field" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-textMain mb-2">Gross Weight (gm)</label>
+                          <input type="number" step="any" name="grossWeight" value={item.grossWeight} onChange={(e) => handleItemChange(index, e)} placeholder="e.g. 12" className="input-field" />
+                        </div>
+                      </>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-semibold text-textMain mb-2">Estimated Value</label>
+                      <input type="number" name="estimatedValue" value={item.estimatedValue} onChange={(e) => handleItemChange(index, e)} placeholder="50000" className="input-field" />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-textMain mb-2">Item Description</label>
+                      <textarea name="description" value={item.description} onChange={(e) => handleItemChange(index, e)} placeholder="Notes about the item..." rows="2" className="input-field resize-none"></textarea>
+                    </div>
+
+                    <div className="md:col-span-2 mt-2">
+                      <span className="block text-sm font-semibold text-textMain mb-2">Upload Photo (Optional)</span>
+                      <div className="border-2 border-dashed border-borderBase rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-textMuted bg-card cursor-pointer hover:border-primary transition-colors h-24 relative overflow-hidden">
+                        <input type="file" accept="image/*" onChange={(e) => handleFileUpload(index, e)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                        {uploadingDocIndex === index ? (
+                          <span className="font-medium text-sm text-primary">Uploading...</span>
+                        ) : item.images.length > 0 ? (
+                          <div className="flex items-center gap-4">
+                            <img src={item.images[0]} alt="Item" className="w-12 h-12 object-cover rounded-md border border-borderBase shadow-sm" />
+                            <div className="flex flex-col">
+                              <span className="icon text-green-500 text-lg">check_circle</span>
+                              <span className="font-medium text-[11px] text-green-500">Uploaded</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="icon text-primary text-2xl">add_a_photo</span> 
+                            <span className="font-medium text-xs">Click to upload photo</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-textMain mb-2">Category *</label>
-              <select name="category" value={formData.category} onChange={handleChange} className="input-field">
-                <option>Gold</option>
-                <option>Silver</option>
-                <option>Platinum</option>
-                <option>Diamond</option>
-                <option>Vehicle</option>
-                <option>Electronics</option>
-                <option>Property</option>
-                <option>Other</option>
-              </select>
-            </div>
-
-            {['Gold', 'Silver', 'Platinum'].includes(formData.category) && (
-              <>
-                <div>
-                  <label className="block text-sm font-semibold text-textMain mb-2">Net Weight (gm)</label>
-                  <input type="number" step="any" name="netWeight" value={formData.netWeight} onChange={handleChange} placeholder="e.g. 10.5" className="input-field" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-textMain mb-2">Gross Weight (gm)</label>
-                  <input type="number" step="any" name="grossWeight" value={formData.grossWeight} onChange={handleChange} placeholder="e.g. 12" className="input-field" />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-sm font-semibold text-textMain mb-2">Estimated Value</label>
-              <input type="number" name="estimatedValue" value={formData.estimatedValue} onChange={handleChange} placeholder="50000" className="input-field" />
+            <div className="md:col-span-2 pt-4 border-t border-borderBase">
+                <h4 className="text-lg font-bold text-textMain mb-4">Financial Details</h4>
             </div>
 
             <div>
@@ -195,9 +289,9 @@ const AddLoan = ({ navigateTo }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-textMain mb-2">Disbursed Amount (Cash Given)</label>
+              <label className="block text-sm font-semibold text-textMain mb-2">Disbursed Amount</label>
               <input type="number" name="disbursedAmount" value={formData.disbursedAmount} onChange={handleChange} placeholder={formData.loanAmount || "29900"} className="input-field bg-background border-dashed" />
-              <p className="text-[11px] text-textMuted mt-1">Leave empty to use exact Loan Amount. Lower it to account for processing fees.</p>
+              <p className="text-[11px] text-textMuted mt-1">Lower this if deducting fees initialy.</p>
             </div>
 
             <div>
@@ -234,35 +328,7 @@ const AddLoan = ({ navigateTo }) => {
               </select>
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-textMain mb-2">Item Description</label>
-              <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Notes about the item..." rows="3" className="input-field resize-none"></textarea>
-            </div>
-
-            <div className="md:col-span-2">
-              <span className="block text-sm font-semibold text-textMain mb-2">Upload Item Photo</span>
-              <div className="border-2 border-dashed border-borderBase rounded-xl p-6 flex flex-col items-center justify-center gap-3 text-textMuted bg-background cursor-pointer hover:border-primary transition-colors h-32 relative overflow-hidden">
-                <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                {uploadingDoc === 'item' ? (
-                  <span className="font-medium text-sm text-primary">Uploading...</span>
-                ) : itemImageUrl ? (
-                  <div className="flex items-center gap-4">
-                    <img src={itemImageUrl} alt="Item" className="w-16 h-16 object-cover rounded-md border border-borderBase shadow-sm" />
-                    <div className="flex flex-col">
-                      <span className="icon text-green-500 text-2xl">check_circle</span>
-                      <span className="font-medium text-sm text-green-500">Uploaded</span>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <span className="icon text-primary text-3xl">add_a_photo</span> 
-                    <span className="font-medium text-sm">Click to upload item photo</span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="md:col-span-2 flex justify-end">
+            <div className="md:col-span-2 flex justify-end mt-4">
               <button type="submit" disabled={submitting} className="btn bg-primary-dark text-white rounded-xl font-bold shadow-md hover:bg-primary py-4 px-8 disabled:opacity-50 disabled:cursor-not-allowed">
                 {submitting ? "Saving..." : "Create Loan"}
               </button>

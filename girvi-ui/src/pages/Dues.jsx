@@ -61,7 +61,7 @@ const Dues = ({ navigateTo, setSelectedCustomer }) => {
     if (!loan.userId?.phone) return;
     
     let text = `Hello ${loan.userId.name},\nThis is a friendly reminder from सुनर आभूषण.\n`;
-    text += `Your loan for ${loan.itemId?.itemName || "Item"} is due. Your current pending amount is ₹${loan.remaining.toFixed(2)}.\n`;
+    text += `Your loan for ${loan.items && loan.items.length > 0 ? loan.items.map(i => i.itemName).join(', ') : (loan.itemId?.itemName || "Item")} is due. Your current pending amount is ₹${loan.remaining.toFixed(2)}.\n`;
     text += `Kindly clear the dues at the earliest.\nThank you!`;
     
     const cleanPhone = loan.userId.phone.replace(/\D/g, '');
@@ -119,8 +119,9 @@ const Dues = ({ navigateTo, setSelectedCustomer }) => {
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
                   <span className="text-textMain font-bold text-lg">{loan.userId?.name || 'Customer'}</span>
-                  <span className="text-sm font-semibold text-textMuted bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md w-max mt-1 mb-2">
-                    {loan.itemId?.itemName || "Item"} • [{loan.itemId?.category || "Unknown"}]
+                  <span className="text-sm font-semibold text-textMuted bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md w-max mt-1 mb-2 truncate max-w-full">
+                    {loan.items && loan.items.length > 0 ? loan.items.map(i => i.itemName).join(', ') : (loan.itemId?.itemName || "Item")} 
+                    • [{loan.items && loan.items.length > 0 ? Array.from(new Set(loan.items.map(i => i.category))).join(', ') : (loan.itemId?.category || "Unknown")}]
                   </span>
                   <span className="text-xs text-textMuted font-medium block">Due Date: {new Date(loan.endDate).toLocaleDateString()}</span>
                 </div>
