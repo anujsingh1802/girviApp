@@ -9,7 +9,7 @@ const loanSchema = new mongoose.Schema(
     interestRate: { type: Number, required: true, min: 0 },
     duration: { type: Number, required: true, min: 1 },
     durationUnit: { type: String, enum: ['days', 'months', 'years'], default: 'months' },
-    interestType: { type: String, enum: ['simple', 'compound', 'monthly', 'daily'], default: 'simple' },
+    interestType: { type: String, enum: ['simple', 'compound', 'monthly', 'daily', 'emi'], default: 'simple' },
     netWeight: { type: Number, default: 0 },
     grossWeight: { type: Number, default: 0 },
     totalPayable: { type: Number, default: 0 },
