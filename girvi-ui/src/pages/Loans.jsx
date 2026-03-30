@@ -7,6 +7,7 @@ const Loans = ({ navigateTo, navParams }) => {
   const [search, setSearch] = useState('');
   const [filterTab, setFilterTab] = useState(navParams?.filterTab || 'All');
   const [error, setError] = useState('');
+  const [selectedEmiLoan, setSelectedEmiLoan] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -74,12 +75,12 @@ const Loans = ({ navigateTo, navParams }) => {
         />
       </div>
 
-      <div className="flex gap-3 mb-6 overflow-x-auto pb-2 -mx-5 px-5 md:mx-0 md:px-0">
+      <div className="flex items-center gap-3 mb-6 overflow-x-auto py-2 -mx-5 px-5 md:mx-0 md:px-0 hide-scrollbar">
         {['All', 'Active', 'Completed'].map(tab => (
           <button
             key={tab}
             onClick={() => setFilterTab(tab)}
-            className={`h-11 px-6 flex items-center justify-center rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+            className={`shrink-0 h-11 px-6 flex items-center justify-center rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
               filterTab === tab
                 ? 'bg-primary text-white shadow-md border border-transparent'
                 : 'bg-card text-textMuted border border-borderBase hover:border-primary/50 hover:text-primary dark:hover:bg-gray-800'
@@ -146,8 +147,65 @@ const Loans = ({ navigateTo, navParams }) => {
                 <span>Created</span>
                 <span>{loan.createdAt ? new Date(loan.createdAt).toLocaleDateString() : "-"}</span>
               </div>
+              {loan.interestType === 'emi' && loan.emiSchedule && loan.emiSchedule.length > 0 && (
+                <button 
+                  onClick={() => setSelectedEmiLoan(loan)}
+                  className="mt-1 py-2 w-full text-center rounded-lg bg-primary-light/10 text-primary-dark font-bold text-sm hover:bg-primary-light/20 transition-colors"
+                >
+                  View EMI Schedule
+                </button>
+              )}
             </div>
           ))}
+        </div>
+      )}
+
+      {selectedEmiLoan && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card w-full max-w-lg rounded-2xl flex flex-col max-h-[85vh] shadow-xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-5 border-b border-borderBase">
+              <div>
+                <h3 className="text-xl font-bold text-textMain">EMI Schedule</h3>
+                <p className="text-xs text-textMuted mt-1">Total EMI: {selectedEmiLoan.emiSchedule.length} Months</p>
+              </div>
+              <button onClick={() => setSelectedEmiLoan(null)} className="icon p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-textMain">close</button>
+            </div>
+            <div className="overflow-y-auto p-5 space-y-3">
+              {selectedEmiLoan.emiSchedule.map((emi, i) => {
+                let statusClass = 'bg-card border-borderBase text-textMain';
+                let badgeClass = 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+                if (emi.status === 'paid') {
+                   statusClass = 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900 text-green-800 dark:text-green-300';
+                   badgeClass = 'bg-green-500 text-white';
+                } else if (emi.status === 'due') {
+                   statusClass = 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-900 text-red-800 dark:text-red-300';
+                   badgeClass = 'bg-red-500 text-white';
+                }
+                
+                return (
+                  <div key={i} className={`p-4 rounded-xl border flex flex-col gap-2 ${statusClass}`}>
+                    <div className="flex justify-between items-center font-bold text-base">
+                      <span>EMI {emi.installmentNumber}</span>
+                      <span className="text-lg">₹{emi.installmentAmount}</span>
+                    </div>
+                    <div className="flex justify-between text-sm opacity-80 mb-2">
+                       <span>Principal: ₹{emi.principalComponent || 0}</span>
+                       <span>Interest: ₹{emi.interestComponent || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm pt-2 border-t border-black/10 dark:border-white/10">
+                      <span className="flex items-center gap-1">
+                        <span className="icon text-[16px]">calendar_today</span> 
+                        {new Date(emi.dueDate).toLocaleDateString()}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold uppercase ${badgeClass}`}>
+                        {emi.status}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>

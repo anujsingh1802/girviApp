@@ -246,7 +246,8 @@ const getAllLoansPublic = asyncHandler(async (req, res) => {
       paidTotal: snapshot.paidAmount,
       remaining: snapshot.remainingBalance,
       interest: snapshot.interestEarned,
-      status: dynamicStatus
+      status: dynamicStatus,
+      emiSchedule: snapshot.emiSchedule
     };
   });
 

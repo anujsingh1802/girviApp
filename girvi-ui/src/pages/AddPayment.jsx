@@ -33,10 +33,14 @@ const AddPayment = ({ navigateTo }) => {
   }, []);
 
   const calculateRemaining = (l, targetDateStr) => {
+    if (l.interestType === 'emi') {
+      return Math.max(0, Number(l.totalPayable || 0) - Number(l.paidTotal || 0));
+    }
     const principal = Number(l.loanAmount || 0);
     const monthlyRate = Number(l.interestRate || 0) / 100;
     const startDate = new Date(l.loanDate || l.startDate || l.createdAt);
     const endDate = new Date(targetDateStr);
+    
     if (!principal || !monthlyRate || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
       return Math.max(0, principal - Number(l.paidTotal || 0));
     }
@@ -71,6 +75,11 @@ const AddPayment = ({ navigateTo }) => {
 
   const interestBreakdown = useMemo(() => {
     if (!selectedLoan) return null;
+    if (selectedLoan.interestType === 'emi') {
+      const principal = Number(selectedLoan.loanAmount || 0);
+      const total = Number(selectedLoan.totalPayable || 0);
+      return { interest: total - principal, total, fullMonths: selectedLoan.duration || 0, extraDays: 0 };
+    }
     const principal = Number(selectedLoan.loanAmount || 0);
     const monthlyRate = Number(selectedLoan.interestRate || 0) / 100;
     const startDate = new Date(selectedLoan.loanDate || selectedLoan.startDate || selectedLoan.createdAt);

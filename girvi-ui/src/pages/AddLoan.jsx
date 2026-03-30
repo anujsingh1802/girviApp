@@ -302,6 +302,7 @@ const AddLoan = ({ navigateTo }) => {
             <div>
               <label className="block text-sm font-semibold text-textMain mb-2">Interest Type *</label>
               <select name="interestType" value={formData.interestType} onChange={handleChange} className="input-field">
+                <option value="emi">EMI (Equated Monthly Installment)</option>
                 <option value="simple">Simple</option>
                 <option value="compound">Compound</option>
                 <option value="monthly">Monthly Flat</option>

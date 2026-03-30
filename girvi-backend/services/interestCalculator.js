@@ -66,11 +66,16 @@ function buildSchedule({
   frequency,
   loanDate,
   paymentMap = {},
+  interestType = 'simple',
+  ratePerPeriod = 0,
 }) {
   const schedule = [];
-  const installmentPrincipal = periods ? principal / periods : principal;
-  const installmentInterest = periods ? totalInterest / periods : totalInterest;
+  const flatPrincipal = periods ? principal / periods : principal;
+  const flatInterest = periods ? totalInterest / periods : totalInterest;
+  const installmentAmount = periods ? (principal + totalInterest) / periods : principal + totalInterest;
+  
   let runningBalance = principal + totalInterest;
+  let runningPrincipal = principal;
   let runningPaid = 0;
 
   for (let index = 0; index < periods; index += 1) {
@@ -81,7 +86,15 @@ function buildSchedule({
       dueDate.setMonth(dueDate.getMonth() + index + 1);
     }
 
-    const installmentAmount = installmentPrincipal + installmentInterest;
+    let pComp = flatPrincipal;
+    let iComp = flatInterest;
+
+    if (interestType === 'emi') {
+      iComp = runningPrincipal * ratePerPeriod;
+      pComp = installmentAmount - iComp;
+      runningPrincipal -= pComp;
+    }
+
     const paid = paymentMap[dueDate.toISOString().slice(0, 10)] || 0;
     runningPaid += paid;
     runningBalance = Math.max(principal + totalInterest - runningPaid, 0);
@@ -89,8 +102,8 @@ function buildSchedule({
     schedule.push({
       installmentNumber: index + 1,
       dueDate,
-      principalComponent: Number(installmentPrincipal.toFixed(2)),
-      interestComponent: Number(installmentInterest.toFixed(2)),
+      principalComponent: Number(pComp.toFixed(2)),
+      interestComponent: Number(iComp.toFixed(2)),
       installmentAmount: Number(installmentAmount.toFixed(2)),
       paidAmount: Number(paid.toFixed(2)),
       balanceAfterInstallment: Number(runningBalance.toFixed(2)),
@@ -117,6 +130,14 @@ function calculateInterestBreakdown({
   let totalInterest = 0;
 
   switch (interestType) {
+    case 'emi':
+      if (ratePerPeriod === 0 || periods === 0) {
+        totalInterest = 0;
+      } else {
+        const emi = amount * ratePerPeriod * Math.pow(1 + ratePerPeriod, periods) / (Math.pow(1 + ratePerPeriod, periods) - 1);
+        totalInterest = (emi * periods) - amount;
+      }
+      break;
     case 'compound':
       totalInterest = amount * (Math.pow(1 + ratePerPeriod, periods) - 1);
       break;
@@ -142,6 +163,8 @@ function calculateInterestBreakdown({
     frequency: interestType === 'daily' ? 'daily' : 'monthly',
     loanDate,
     paymentMap,
+    interestType,
+    ratePerPeriod
   });
 
   return {
