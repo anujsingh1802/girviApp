@@ -153,20 +153,32 @@ const AddPayment = ({ navigateTo }) => {
           <div className="flex flex-col gap-4 w-full">
             <button 
               onClick={() => {
-                import('../utils/pdfGenerator').then(module => {
-                  module.generatePaymentReceipt(paymentSuccessData);
-                }).catch(err => {
-                  console.error(err);
-                  alert("Could not load PDF generator");
-                });
+                window.open(`/receipt/${paymentSuccessData.transaction._id}`, '_blank');
               }} 
               className="btn w-full bg-primary-dark text-white rounded-xl font-bold shadow-md hover:bg-primary py-4 px-8 flex justify-center items-center gap-2"
             >
-              <span className="icon">download</span> Download PDF Receipt
+              <span className="icon">receipt_long</span> View & Download Receipt
+            </button>
+            <button 
+              onClick={() => {
+                 const link = `${window.location.origin}/receipt/${paymentSuccessData.transaction._id}`;
+                 const customerPhone = paymentSuccessData.loan.userId?.phone || paymentSuccessData.loan.userId || "";
+                 // The backend returns populated userId with name, or just the ID but the customer's phone is usually in loan.userId.phone
+                 const customerName = paymentSuccessData.loan.userId?.name || "Customer";
+                 const text = `Hello ${customerName},\nYour payment of ₹${paymentSuccessData.transaction.amount} has been successfully recorded.\n\nPlease view and download your verified digital receipt here: ${link} \n\nThank you for choosing सुनर आभूषण.`;
+                 
+                 const cleanPhone = String(customerPhone).replace(/\D/g, '');
+                 const mobileNumber = cleanPhone.slice(-10);
+                 const url = `https://api.whatsapp.com/send?phone=91${mobileNumber}&text=${encodeURIComponent(text)}`;
+                 window.open(url, '_blank');
+              }}
+              className="btn w-full bg-[#25D366] text-white rounded-xl font-bold shadow-md hover:bg-[#1DA851] py-4 px-8 flex justify-center items-center gap-2"
+            >
+              <span className="icon">chat</span> Share via WhatsApp
             </button>
             <button 
               onClick={() => navigateTo('home')} 
-              className="btn w-full bg-card border-2 border-borderBase text-textMain rounded-xl font-bold shadow-sm hover:bg-background py-4 flex justify-center items-center gap-2"
+              className="btn w-full bg-card border-2 border-borderBase text-textMain rounded-xl font-bold shadow-sm hover:bg-background py-4 flex justify-center items-center gap-2 mt-2"
             >
               <span className="icon">home</span> Go to Home
             </button>

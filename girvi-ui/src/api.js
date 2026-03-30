@@ -11,7 +11,8 @@ export const API_ENDPOINTS = {
   NOTIFICATIONS: `${API_BASE_URL}/api/notifications`,
   PAYMENT_HISTORY: `${API_BASE_URL}/api/payment/public/history`,
   PAYMENT_PUBLIC: `${API_BASE_URL}/api/payment/public/pay`,
-  ITEMS_ALL: `${API_BASE_URL}/api/items/public/all`
+  ITEMS_ALL: `${API_BASE_URL}/api/items/public/all`,
+  RECEIPT_PUBLIC: (txnId) => `${API_BASE_URL}/api/receipt/${txnId}`
 };
 
 export default API_BASE_URL;

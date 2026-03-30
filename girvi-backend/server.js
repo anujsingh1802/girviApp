@@ -14,6 +14,7 @@ const loanRoutes = require("./routes/loanRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const receiptRoutes = require("./routes/receiptRoutes");
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/receipt", receiptRoutes);
 
 app.use(errorHandler);
 
@@ -87,3 +89,5 @@ connectDB()
     }
     process.exit(1);
   });
+
+// restart node

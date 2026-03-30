@@ -13,6 +13,7 @@ import Account from './pages/Account';
 import Report from './pages/Report';
 import ItemsManagement from './pages/ItemsManagement';
 import Transactions from './pages/Transactions';
+import ReceiptView from './pages/ReceiptView';
 import AccessLock from './components/AccessLock';
 
 export default function App() {
@@ -54,6 +55,11 @@ export default function App() {
         setIsAuthenticated(true);
       }} />
     );
+  }
+
+  if (window.location.pathname.startsWith('/receipt/')) {
+    const txnId = window.location.pathname.split('/receipt/')[1];
+    return <ReceiptView txnId={txnId} />;
   }
 
   return (

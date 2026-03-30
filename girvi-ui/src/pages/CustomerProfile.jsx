@@ -5,6 +5,7 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
   const [data, setData] = useState(null);
   const [userSummary, setUserSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: "", message: "", onConfirm: null, isFinal: false, preventClose: false });
 
   useEffect(() => {
@@ -333,7 +334,7 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
           ) : (
             <div className="bg-card rounded-2xl border border-borderBase shadow-sm overflow-hidden">
               {transactions.map((txn, i) => (
-                <div key={txn._id} className={`p-4 flex items-center justify-between hover:bg-[var(--color-background)] transition-colors ${i !== transactions.length - 1 ? 'border-b border-borderBase' : ''}`}>
+                <div key={txn._id} onClick={() => setSelectedTransaction(txn)} className={`p-4 flex items-center justify-between hover:bg-[var(--color-background)] transition-colors cursor-pointer ${i !== transactions.length - 1 ? 'border-b border-borderBase' : ''}`}>
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${txn.type === 'loan_disbursed' ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'bg-green-100 text-green-600 dark:bg-green-900/30'}`}>
                       <span className="icon text-[18px]">{txn.type === 'loan_disbursed' ? 'call_made' : 'call_received'}</span>
@@ -392,6 +393,56 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                   className="flex-1 py-3 font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors shadow-sm"
                 >
                   Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedTransaction && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center p-4 outline-none pb-8 md:pb-4" onClick={() => setSelectedTransaction(null)}>
+          <div className="bg-card w-full max-w-sm rounded-[24px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-200 border border-borderBase relative" onClick={e => e.stopPropagation()}>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-textMain mb-4 border-b border-borderBase pb-3 flex justify-between items-center">
+                Transaction Actions
+                <span className="icon cursor-pointer text-textMuted hover:text-textMain" onClick={() => setSelectedTransaction(null)}>close</span>
+              </h3>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => {
+                    window.open(`/receipt/${selectedTransaction._id}`, '_blank');
+                    setSelectedTransaction(null);
+                  }}
+                  className="w-full py-4 px-4 bg-primary-light/10 text-primary-dark font-bold rounded-xl flex items-center gap-3 hover:bg-primary-light/20 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary-light/30 flex items-center justify-center shrink-0">
+                    <span className="icon">receipt_long</span>
+                  </div>
+                  <span className="text-left flex-1">View & Download Receipt</span>
+                  <span className="icon text-sm opacity-50">open_in_new</span>
+                </button>
+
+                <button 
+                  onClick={() => {
+                    const isPayment = selectedTransaction.type !== 'loan_disbursed';
+                    const link = `${window.location.origin}/receipt/${selectedTransaction._id}`;
+                    const text = `Hello ${customer.name},\nYour ${isPayment ? 'payment' : 'loan disbursement'} of ₹${selectedTransaction.amount} has been successfully recorded.\n\nPlease view and download your verified digital receipt here: ${link} \n\nThank you for choosing सुनर आभूषण.`;
+                    
+                    const cleanPhone = customer.phone.replace(/\D/g, '');
+                    const mobileNumber = cleanPhone.slice(-10);
+                    const url = `https://api.whatsapp.com/send?phone=91${mobileNumber}&text=${encodeURIComponent(text)}`;
+                    window.open(url, '_blank');
+                    setSelectedTransaction(null);
+                  }}
+                  className="w-full py-4 px-4 bg-[#25D366]/10 text-[#1DA851] font-bold rounded-xl flex items-center gap-3 hover:bg-[#25D366]/20 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#25D366]/20 flex items-center justify-center shrink-0">
+                    <span className="icon">chat</span>
+                  </div>
+                  <span className="text-left flex-1">Share via WhatsApp</span>
+                  <span className="icon text-sm opacity-50">open_in_new</span>
                 </button>
               </div>
             </div>

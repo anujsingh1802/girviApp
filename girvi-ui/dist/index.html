@@ -1,14 +1,85 @@
 <!doctype html>
-<html lang="en">
+<html lang="hi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>GIRVI (गिरवी) - Fintech UI</title>
+    <!-- Mobile-first viewport: prevent zoom, match device width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <title>सुनर आभूषण - Gold Loan Manager</title>
+    <meta name="description" content="सुनर आभूषण - Professional Gold Loan Management App. Manage girvi loans, track dues, and generate receipts with ease." />
+
+    <!-- PWA Theme Colors -->
+    <meta name="theme-color" content="#6C3BFF" />
+    <meta name="msapplication-TileColor" content="#6C3BFF" />
+    <meta name="msapplication-navbutton-color" content="#6C3BFF" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="सुनर आभूषण" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS Splash Screen (inline styles for reliability) -->
+    <meta name="apple-touch-fullscreen" content="yes" />
+
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/pwa-192x192.png" />
+
+    <!-- Manifest injected by vite-plugin-pwa -->
+
     <!-- Fonts and Icons are imported via index.css -->
-    <script type="module" crossorigin src="/assets/index-Da-PrU_K.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-D9gJIFqb.css">
-  </head>
+    <script type="module" crossorigin src="/assets/index-BGG951vg.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/chunk-B3K2TuZy.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DWHU7HBH.css">
+  <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
+    <!-- Inline splash screen shown before JS loads -->
+    <div id="pwa-splash" style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #6C3BFF 0%, #4B0082 100%);
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    ">
+      <div style="text-align:center; color: white;">
+        <div style="font-size: 60px; margin-bottom: 12px;">💰</div>
+        <div style="font-size: 26px; font-weight: 700; letter-spacing: 0.5px;">सुनर आभूषण</div>
+        <div style="font-size: 13px; opacity: 0.75; margin-top: 4px;">Gold Loan Manager</div>
+        <div style="margin-top: 28px;">
+          <div style="
+            width: 36px; height: 36px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: auto;
+          "></div>
+        </div>
+      </div>
+      <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+      </style>
+    </div>
+
     <div id="root"></div>
+    <script>
+      // Hide splash once React has mounted
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var splash = document.getElementById('pwa-splash');
+          if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(function() { splash.remove(); }, 400);
+          }
+        }, 600);
+      });
+    </script>
   </body>
 </html>
