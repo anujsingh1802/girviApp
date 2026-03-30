@@ -79,9 +79,9 @@ const Loans = ({ navigateTo, navParams }) => {
           <button
             key={tab}
             onClick={() => setFilterTab(tab)}
-            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+            className={`h-11 px-6 flex items-center justify-center rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
               filterTab === tab
-                ? 'bg-primary text-white shadow-md'
+                ? 'bg-primary text-white shadow-md border border-transparent'
                 : 'bg-card text-textMuted border border-borderBase hover:border-primary/50 hover:text-primary dark:hover:bg-gray-800'
             }`}
           >
