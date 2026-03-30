@@ -32,18 +32,35 @@ const AddPayment = ({ navigateTo }) => {
     };
   }, []);
 
+  const calculateRemaining = (l, targetDateStr) => {
+    const principal = Number(l.loanAmount || 0);
+    const monthlyRate = Number(l.interestRate || 0) / 100;
+    const startDate = new Date(l.loanDate || l.startDate || l.createdAt);
+    const endDate = new Date(targetDateStr);
+    if (!principal || !monthlyRate || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      return Math.max(0, principal - Number(l.paidTotal || 0));
+    }
+    const diffMs = Math.max(0, endDate.getTime() - startDate.getTime());
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const interest = (principal * monthlyRate * Math.floor(diffDays / 30)) + (principal * monthlyRate * ((diffDays % 30) / 30));
+    const roundedInterest = Math.round(interest * 100) / 100;
+    const total = Math.round((principal + roundedInterest) * 100) / 100;
+    return Math.max(0, Math.round((total - Number(l.paidTotal || 0)) * 100) / 100);
+  };
+
   const loanOptions = useMemo(() => {
     return loans.map((l) => {
       const itemsText = l.items && l.items.length > 0
         ? l.items.map(i => i.itemName).join(', ')
         : (l.itemId?.itemName || "Item");
       const dateText = new Date(l.loanDate || l.createdAt).toLocaleDateString();
+      const liveRemaining = calculateRemaining(l, formData.releaseDate);
       return {
         id: l._id,
-        label: `${l.userId?.name || "Customer"} • ₹${l.loanAmount} loan • ₹${l.remaining || 0} remaining • ${itemsText} • ${dateText}`,
+        label: `${l.userId?.name || "Customer"} • ₹${l.loanAmount} loan • ₹${liveRemaining} remaining • ${itemsText} • ${dateText}`,
       };
     });
-  }, [loans]);
+  }, [loans, formData.releaseDate]);
 
   const selectedLoan = useMemo(() => loans.find((l) => l._id === formData.loanId), [loans, formData.loanId]);
 
