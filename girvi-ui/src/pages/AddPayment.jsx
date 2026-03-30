@@ -5,6 +5,7 @@ const AddPayment = ({ navigateTo }) => {
   const [loans, setLoans] = useState([]);
   const [loadingLoans, setLoadingLoans] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentSuccessData, setPaymentSuccessData] = useState(null);
   const [formData, setFormData] = useState({
     loanId: '',
     amount: '',
@@ -123,8 +124,7 @@ const AddPayment = ({ navigateTo }) => {
       });
       const result = await res.json();
       if (res.ok) {
-        alert("Payment recorded successfully!");
-        navigateTo('home');
+        setPaymentSuccessData(result);
       } else {
         alert("Error: " + result.message);
       }
@@ -134,6 +134,47 @@ const AddPayment = ({ navigateTo }) => {
       setSubmitting(false);
     }
   };
+
+  if (paymentSuccessData) {
+    return (
+      <div className="flex flex-col h-full bg-background rounded-t-[40px] lg:rounded-t-[32px] overflow-hidden">
+        <div className="bg-primary text-white px-6 py-5 md:py-6 flex items-center gap-4 sticky top-0 z-20 shadow-md">
+          <span className="icon cursor-pointer hover:bg-white/20 p-2 rounded-full transition-colors" onClick={() => navigateTo('home')}>arrow_back</span>
+          <h2 className="text-xl md:text-2xl font-semibold">Payment Successful</h2>
+        </div>
+        <div className="view-padding py-8 flex-1 flex flex-col items-center justify-center max-w-lg mx-auto w-full px-4">
+          <div className="text-green-500 mb-6 bg-green-50 p-6 rounded-full inline-flex">
+            <span className="icon text-6xl">check_circle</span>
+          </div>
+          <h3 className="text-2xl font-bold text-textMain mb-2">Payment Recorded!</h3>
+          <p className="text-textMuted text-center font-medium mb-8">
+            An amount of ₹{paymentSuccessData.transaction?.amount} has been successfully added.
+          </p>
+          <div className="flex flex-col gap-4 w-full">
+            <button 
+              onClick={() => {
+                import('../utils/pdfGenerator').then(module => {
+                  module.generatePaymentReceipt(paymentSuccessData);
+                }).catch(err => {
+                  console.error(err);
+                  alert("Could not load PDF generator");
+                });
+              }} 
+              className="btn w-full bg-primary-dark text-white rounded-xl font-bold shadow-md hover:bg-primary py-4 px-8 flex justify-center items-center gap-2"
+            >
+              <span className="icon">download</span> Download PDF Receipt
+            </button>
+            <button 
+              onClick={() => navigateTo('home')} 
+              className="btn w-full bg-card border-2 border-borderBase text-textMain rounded-xl font-bold shadow-sm hover:bg-background py-4 flex justify-center items-center gap-2"
+            >
+              <span className="icon">home</span> Go to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-background rounded-t-[40px] lg:rounded-t-[32px] overflow-hidden">
