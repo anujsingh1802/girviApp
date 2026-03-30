@@ -5,6 +5,7 @@ const Loans = ({ navigateTo }) => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filterTab, setFilterTab] = useState('All');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -28,9 +29,16 @@ const Loans = ({ navigateTo }) => {
   }, []);
 
   const filteredLoans = useMemo(() => {
+    let filtered = loans;
+    if (filterTab === 'Active') {
+      filtered = filtered.filter(l => l.status !== 'completed' && l.status !== 'rejected');
+    } else if (filterTab === 'Completed') {
+      filtered = filtered.filter(l => l.status === 'completed');
+    }
+
     const q = search.trim().toLowerCase();
-    if (!q) return loans;
-    return loans.filter((loan) => {
+    if (!q) return filtered;
+    return filtered.filter((loan) => {
       const name = loan.userId?.name?.toLowerCase() || "";
       const phone = loan.userId?.phone?.toLowerCase() || "";
       const item = loan.items && loan.items.length > 0 
@@ -38,7 +46,7 @@ const Loans = ({ navigateTo }) => {
         : (loan.itemId?.itemName?.toLowerCase() || "");
       return name.includes(q) || phone.includes(q) || item.includes(q);
     });
-  }, [loans, search]);
+  }, [loans, search, filterTab]);
 
   return (
     <div className="flex flex-col h-full bg-background view-padding pt-6 md:pt-10 max-w-7xl mx-auto w-full">
@@ -55,7 +63,7 @@ const Loans = ({ navigateTo }) => {
         </button>
       </div>
 
-      <div className="bg-card px-5 py-4 rounded-xl border border-borderBase flex items-center gap-3 shadow-sm mb-6 transition-colors duration-300">
+      <div className="bg-card px-5 py-4 rounded-xl border border-borderBase flex items-center gap-3 shadow-sm mb-4 transition-colors duration-300">
         <span className="icon text-textMuted text-xl">search</span>
         <input
           type="text"
@@ -64,6 +72,22 @@ const Loans = ({ navigateTo }) => {
           placeholder="Search by customer or item..."
           className="w-full bg-transparent outline-none text-textMain placeholder-textMuted font-medium text-base md:text-lg"
         />
+      </div>
+
+      <div className="flex gap-3 mb-6 overflow-x-auto pb-2 -mx-5 px-5 md:mx-0 md:px-0">
+        {['All', 'Active', 'Completed'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setFilterTab(tab)}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+              filterTab === tab
+                ? 'bg-primary text-white shadow-md'
+                : 'bg-card text-textMuted border border-borderBase hover:border-primary/50 hover:text-primary dark:hover:bg-gray-800'
+            }`}
+          >
+            {tab} Loans
+          </button>
+        ))}
       </div>
 
       {error ? (
