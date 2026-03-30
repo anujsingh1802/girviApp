@@ -203,7 +203,7 @@ const publicApplyLoan = asyncHandler(async (req, res) => {
     source: 'loan-disbursement'
   });
 
-  res.status(201).json({ loan, item });
+  res.status(201).json({ loan, items: createdItemIds });
 });
 
 const getAllLoansPublic = asyncHandler(async (req, res) => {
