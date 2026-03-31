@@ -38,8 +38,10 @@ const AddCustomer = ({ navigateTo }) => {
         if (type === 'pan') setPanUrl(result.url);
         if (type === 'profile') setProfileUrl(result.url);
         if (type === 'signature') setSignatureUrl(result.url);
+        return result.url;
       } else {
         alert("Upload failed: " + result.message);
+        return null;
       }
     } catch (err) {
       console.error(err);
@@ -280,8 +282,12 @@ const AddCustomer = ({ navigateTo }) => {
           const file = new File([blob], "signature.png", { type: "image/png" });
           
           const event = { target: { files: [file] } };
-          await handleFileUpload(event, 'signature');
-          setSignatureUrl(dataURL); // Show preview immediately while uploading if needed, but handleFileUpload will update URL
+          const uploadedUrl = await handleFileUpload(event, 'signature');
+          if (uploadedUrl) {
+            setSignatureUrl(uploadedUrl);
+          } else {
+            setSignatureUrl(dataURL);
+          }
         }}
       />
     </div>
