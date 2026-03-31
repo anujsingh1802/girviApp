@@ -116,6 +116,12 @@ const ReceiptView = ({ txnId }) => {
               <p className="text-gray-600 mt-1 flex items-center gap-1.5"><span className="icon text-[14px] text-gray-400">phone</span> {customer.phone}</p>
               {customer.address && <p className="text-gray-600 mt-1 flex items-start gap-1.5 leading-snug"><span className="icon text-[14px] text-gray-400 mt-0.5">home</span> <span className="flex-1">{customer.address}</span></p>}
             </div>
+            {customer.signatureUrl && (
+              <div className="flex flex-col items-center border rounded-lg p-3 bg-white shadow-sm">
+                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Customer Signature</p>
+                <img src={customer.signatureUrl} alt="Customer Signature" className="max-h-24 object-contain border rounded-md" />
+              </div>
+            )}
 
             <div>
               <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2 border-b border-gray-100 pb-1">Loan Information</p>

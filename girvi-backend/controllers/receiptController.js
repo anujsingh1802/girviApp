@@ -13,7 +13,7 @@ const getReceipt = asyncHandler(async (req, res) => {
   const loan = await Loan.findById(transaction.loanId).populate("itemId").populate("items");
   if (!loan) return res.status(404).json({ message: "Loan not found" });
 
-  const customer = await User.findById(transaction.userId).select("name phone address email");
+  const customer = await User.findById(transaction.userId).select("name phone address email signatureUrl");
   if (!customer) return res.status(404).json({ message: "Customer not found" });
 
   // Get all previous payments to calculate the exact state up to this transaction
