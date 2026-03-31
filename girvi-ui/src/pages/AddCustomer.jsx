@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import API_BASE_URL, { API_ENDPOINTS } from '../api';
+import SignatureModal from '../components/SignatureModal';
 
 const AddCustomer = ({ navigateTo }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,8 @@ const AddCustomer = ({ navigateTo }) => {
   const [aadhaarUrl, setAadhaarUrl] = useState('');
   const [panUrl, setPanUrl] = useState('');
   const [profileUrl, setProfileUrl] = useState('');
+  const [signatureUrl, setSignatureUrl] = useState('');
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadingDoc, setUploadingDoc] = useState('');
 
@@ -34,6 +37,7 @@ const AddCustomer = ({ navigateTo }) => {
         if (type === 'aadhaar') setAadhaarUrl(result.url);
         if (type === 'pan') setPanUrl(result.url);
         if (type === 'profile') setProfileUrl(result.url);
+        if (type === 'signature') setSignatureUrl(result.url);
       } else {
         alert("Upload failed: " + result.message);
       }
@@ -63,6 +67,7 @@ const AddCustomer = ({ navigateTo }) => {
         profileUrl,
         aadhaarUrl,
         panUrl,
+        signatureUrl,
         notes
       };
 
@@ -211,6 +216,49 @@ const AddCustomer = ({ navigateTo }) => {
             <label className="block text-sm font-semibold text-textMain mb-2">Additional Notes :</label>
             <textarea name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Any special instructions or notes..." rows="4" className="input-field resize-none"></textarea>
           </div>
+
+          <h4 className="text-lg font-bold text-textMain mt-10 mb-6 border-b border-borderBase pb-3">Customer Signature</h4>
+          <div className="flex flex-col md:flex-row gap-6 items-center">
+            <div className="flex-1 w-full relative">
+              <div 
+                className="border-2 border-dashed border-borderBase rounded-xl p-4 flex flex-col items-center justify-center gap-3 text-textMuted bg-background cursor-pointer hover:border-primary transition-colors min-h-[160px] relative overflow-hidden"
+                onClick={() => setIsSignatureModalOpen(true)}
+              >
+                {signatureUrl ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <img src={signatureUrl} alt="Signature" className="max-h-24 md:max-h-32 object-contain bg-white rounded-lg shadow-sm p-2" />
+                    <span className="text-xs text-green-500 font-bold flex items-center gap-1">
+                      <span className="icon text-[14px]">check_circle</span> Signature Captured
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <span className="icon text-primary text-[48px]">draw</span> 
+                    <span className="font-semibold text-sm">Click to add customer signature</span>
+                    <span className="text-xs text-textMuted">(Opens in landscape mode)</span>
+                  </>
+                )}
+                {uploadingDoc === 'signature' && (
+                   <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
+                     <span className="font-medium text-sm text-primary">Uploading Signature...</span>
+                   </div>
+                )}
+              </div>
+            </div>
+            <div className="md:w-1/3 flex flex-col gap-2">
+               <button 
+                 type="button"
+                 onClick={() => setIsSignatureModalOpen(true)}
+                 className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all text-sm"
+               >
+                 <span className="icon text-[18px]">edit</span>
+                 {signatureUrl ? "Redraw Signature" : "Capture Signature"}
+               </button>
+               <p className="text-xs text-textMuted italic">
+                 Signatures are securely stored and will be used on official receipts.
+               </p>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col-reverse md:flex-row gap-4 mt-8 md:justify-end">
@@ -222,6 +270,20 @@ const AddCustomer = ({ navigateTo }) => {
           </button>
         </div>
       </div>
+      
+      <SignatureModal 
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSave={async (dataURL) => {
+          // Convert dataURL (base64) to Blob
+          const blob = await (await fetch(dataURL)).blob();
+          const file = new File([blob], "signature.png", { type: "image/png" });
+          
+          const event = { target: { files: [file] } };
+          await handleFileUpload(event, 'signature');
+          setSignatureUrl(dataURL); // Show preview immediately while uploading if needed, but handleFileUpload will update URL
+        }}
+      />
     </div>
   );
 };

@@ -49,7 +49,7 @@ const Customers = ({ navigateTo, setSelectedCustomer }) => {
   }, [customers, search]);
 
   return (
-    <div className="flex flex-col h-full bg-background view-padding pt-6 md:pt-10 max-w-7xl mx-auto w-full">
+    <div className="flex flex-col min-h-full bg-background view-padding pt-6 md:pt-10 max-w-7xl mx-auto w-full">
       <div className="flex justify-between items-center mb-8">
         <div className="flex flex-col gap-1">
           <h2 className="text-2xl md:text-3xl font-bold text-textMain">Customers</h2>

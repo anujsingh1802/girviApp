@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
     profileUrl: { type: String },
     aadhaarUrl: { type: String },
     panUrl: { type: String },
+    signatureUrl: { type: String },
     documents: [{ type: String }],
     notes: { type: String }
   },

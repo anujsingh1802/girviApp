@@ -176,7 +176,7 @@ const profile = asyncHandler(async (req, res) => {
 });
 
 const createCustomer = asyncHandler(async (req, res) => {
-  const { name, email, phone, address, profileUrl, aadhaarUrl, panUrl, documents, notes } = req.body;
+  const { name, email, phone, address, profileUrl, aadhaarUrl, panUrl, signatureUrl, documents, notes } = req.body;
 
   if (!name || !phone) {
     return res.status(400).json({ message: "Name and phone are required" });
@@ -196,6 +196,7 @@ const createCustomer = asyncHandler(async (req, res) => {
     profileUrl,
     aadhaarUrl,
     panUrl,
+    signatureUrl,
     documents: documents || [],
     notes
   });

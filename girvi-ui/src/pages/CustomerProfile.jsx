@@ -182,11 +182,11 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
         </div>
 
         {/* Documents */}
-        {(customer.aadhaarUrl || customer.panUrl || (customer.documents && customer.documents.length > 0)) && (
+        {(customer.aadhaarUrl || customer.panUrl || customer.signatureUrl || (customer.documents && customer.documents.length > 0)) && (
           <div>
             <h4 className="text-lg font-bold text-textMain mb-4 flex items-center gap-2">
               <span className="icon text-primary">description</span> 
-              Documents
+              Documents & Signature
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {customer.aadhaarUrl && (
@@ -215,6 +215,14 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                       <img src={customer.panUrl} alt="PAN" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     )}
                   </a>
+                </div>
+              )}
+              {customer.signatureUrl && (
+                <div className="card p-3 border border-borderBase flex flex-col gap-2 relative col-span-2 md:col-span-1">
+                  <span className="text-xs font-bold text-textMain truncate">Customer Signature</span>
+                  <div className="block w-full h-24 bg-white rounded-lg overflow-hidden relative group border border-borderBase/50 p-1">
+                    <img src={customer.signatureUrl} alt="Signature" className="w-full h-full object-contain" />
+                  </div>
                 </div>
               )}
             </div>

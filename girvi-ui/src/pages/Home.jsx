@@ -111,7 +111,7 @@ const Home = ({ navigateTo }) => {
   const pendingAmount = loans.reduce((acc, l) => acc + ((l.remaining > 0) ? l.remaining : 0), 0);
 
   return (
-    <div className="view-content">
+    <div className="flex flex-col min-h-full">
 
       {/* ── Curved Purple Header ────────────────────────────── */}
       <div className="bg-primary pt-6 px-4 sm:px-6 md:px-12 pb-20 rounded-b-[32px] md:rounded-b-[64px]">

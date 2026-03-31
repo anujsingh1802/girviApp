@@ -31,12 +31,12 @@
     height: -webkit-fill-available;
   }
 
-  body {
+    body {
     @apply bg-[var(--color-body-bg)] text-textMain antialiased transition-colors duration-300;
     min-height: 100vh;
     min-height: 100dvh;
-    /* Prevent pull-to-refresh on installed PWA */
-    overscroll-behavior-y: none;
+    /* Prevent pull-to-refresh on installed PWA - but allow scroll */
+    overscroll-behavior-y: contain;
     -webkit-tap-highlight-color: transparent;
   }
 }
@@ -52,6 +52,8 @@
     @apply flex-1 relative overflow-x-hidden overflow-y-auto bg-background transition-colors duration-300;
     /* Bottom padding = nav height + safe-area inset so content never hides behind nav */
     padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 1.5rem);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 
   .view-padding {

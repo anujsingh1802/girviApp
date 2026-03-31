@@ -66,7 +66,7 @@ export default function App() {
   return (
     <div className="app-container">
       <div className="views-container">
-        <div className="animate-in fade-in zoom-in-95 duration-200 h-full">
+        <div className="animate-in fade-in zoom-in-95 duration-200">
           {currentView === 'home' && <Home navigateTo={navigateTo} />}
           {currentView === 'customers' && <Customers navigateTo={navigateTo} setSelectedCustomer={setSelectedCustomer} />}
           {currentView === 'customer-profile' && <CustomerProfile navigateTo={navigateTo} customerId={selectedCustomer} />}
