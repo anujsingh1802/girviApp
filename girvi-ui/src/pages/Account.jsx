@@ -29,7 +29,7 @@ const Account = ({ navigateTo, isDark, setIsDark }) => {
              <span className="icon text-gray-400 dark:text-gray-600 text-[40px] md:text-[48px]">person</span>
           </div>
           <div className="flex flex-col flex-1">
-            <h3 className="text-xl md:text-2xl font-bold text-textMain leading-tight">सुनर आभूषण</h3>
+            <h3 className="text-xl md:text-2xl font-bold text-textMain leading-tight">सुनार आभूषण</h3>
             {isEditingPhone ? (
                <div className="flex items-center gap-2 mt-2">
                  <input type="text" className="input-field !py-1 !px-2 !text-sm w-32" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} autoFocus />

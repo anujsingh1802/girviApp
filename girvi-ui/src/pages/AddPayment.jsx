@@ -165,7 +165,7 @@ const AddPayment = ({ navigateTo }) => {
                  const customerPhone = paymentSuccessData.loan.userId?.phone || paymentSuccessData.loan.userId || "";
                  // The backend returns populated userId with name, or just the ID but the customer's phone is usually in loan.userId.phone
                  const customerName = paymentSuccessData.loan.userId?.name || "Customer";
-                 const text = `Hello ${customerName},\nYour payment of ₹${paymentSuccessData.transaction.amount} has been successfully recorded.\n\nPlease view and download your verified digital receipt here: ${link} \n\nThank you for choosing सुनर आभूषण.`;
+                 const text = `Hello ${customerName},\nYour payment of ₹${paymentSuccessData.transaction.amount} has been successfully recorded.\n\nPlease view and download your verified digital receipt here: ${link} \n\nThank you for choosing सुनार आभूषण.`;
                  
                  const cleanPhone = String(customerPhone).replace(/\D/g, '');
                  const mobileNumber = cleanPhone.slice(-10);

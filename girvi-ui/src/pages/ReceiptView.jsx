@@ -91,7 +91,7 @@ const ReceiptView = ({ txnId }) => {
         {/* Header / Brand */}
         <div className="bg-[#1a252f] text-white text-center py-6 px-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-[100px] -z-0"></div>
-          <h1 className="text-3xl font-extrabold tracking-wide drop-shadow-sm mb-1 relative z-10" style={{ letterSpacing: '1px' }}>सुनर आभूषण</h1>
+          <h1 className="text-3xl font-extrabold tracking-wide drop-shadow-sm mb-1 relative z-10" style={{ letterSpacing: '1px' }}>सुनार आभूषण</h1>
           <p className="text-gray-300 text-sm font-medium tracking-wider relative z-10 uppercase">Sunar Abhushan • Payment Receipt</p>
         </div>
 
@@ -198,7 +198,7 @@ const ReceiptView = ({ txnId }) => {
 
         {/* Footer */}
         <div className="bg-gray-50 p-6 text-center border-t border-gray-200">
-          <p className="text-gray-800 text-sm font-bold mb-1">Thank you for trusting सुनर आभूषण!</p>
+          <p className="text-gray-800 text-sm font-bold mb-1">Thank you for trusting सुनार आभूषण!</p>
           <p className="text-gray-500 text-xs">This is a system generated digital receipt and does not require a physical signature.</p>
         </div>
       </div>

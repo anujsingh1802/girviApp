@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'GIRVI - सुनर आभूषण',
+        name: 'GIRVI - सुनार आभूषण',
         short_name: 'GIRVI',
         description: 'Professional Jewellery Loan - Girvi Management System',
         theme_color: '#6D28D9',

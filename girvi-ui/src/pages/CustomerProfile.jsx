@@ -109,11 +109,11 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
   const handleWhatsApp = () => {
     let text = "";
     if (totalPending <= 0) {
-      text = `Hello ${customer.name},\nThank you for choosing सुनर आभूषण.\n`;
+      text = `Hello ${customer.name},\nThank you for choosing सुनार आभूषण.\n`;
       text += `Your loan has been successfully cleared and your pending amount is ₹0.00.\n`;
       text += `We appreciate your prompt payments and look forward to serving you again.`;
     } else {
-      text = `Hello ${customer.name},\nThis is a friendly reminder from सुनर आभूषण.\n`;
+      text = `Hello ${customer.name},\nThis is a friendly reminder from सुनार आभूषण.\n`;
       text += `Your total pending loan amount is ₹${totalPending.toFixed(2)}.\n`;
       text += `Kindly clear the dues at the earliest.\nThank you!`;
     }
@@ -436,7 +436,7 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                   onClick={() => {
                     const isPayment = selectedTransaction.type !== 'loan_disbursed';
                     const link = `${window.location.origin}/receipt/${selectedTransaction._id}`;
-                    const text = `Hello ${customer.name},\nYour ${isPayment ? 'payment' : 'loan disbursement'} of ₹${selectedTransaction.amount} has been successfully recorded.\n\nPlease view and download your verified digital receipt here: ${link} \n\nThank you for choosing सुनर आभूषण.`;
+                    const text = `Hello ${customer.name},\nYour ${isPayment ? 'payment' : 'loan disbursement'} of ₹${selectedTransaction.amount} has been successfully recorded.\n\nPlease view and download your verified digital receipt here: ${link} \n\nThank you for choosing सुनार आभूषण.`;
                     
                     const cleanPhone = customer.phone.replace(/\D/g, '');
                     const mobileNumber = cleanPhone.slice(-10);
