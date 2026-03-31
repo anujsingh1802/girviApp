@@ -9,7 +9,8 @@ const {
   getCustomers,
   getCustomerProfile,
   getUserSummary,
-  deleteCustomer
+  deleteCustomer,
+  updateCustomer
 } = require("../controllers/authController");
 const auth = require("../middleware/auth");
 
@@ -24,6 +25,7 @@ router.post("/customer", createCustomer);
 router.get("/customers", getCustomers);
 router.get("/customer/:id", getCustomerProfile);
 router.get("/user/:id/summary", getUserSummary);
+router.patch("/customer/:id", updateCustomer);
 router.delete("/customer/:id", deleteCustomer);
 
 module.exports = router;

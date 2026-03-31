@@ -37,27 +37,76 @@ const ReceiptView = ({ txnId }) => {
   const handleDownloadPdf = async () => {
     if (!receiptRef.current) return;
     try {
+      // Scroll element into view and wait for layout to settle
+      receiptRef.current.scrollIntoView();
+      await new Promise(r => setTimeout(r, 300));
+
       const canvas = await html2canvas(receiptRef.current, {
-        scale: 2, // higher resolution
+        scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: receiptRef.current.scrollWidth,
+        windowHeight: receiptRef.current.scrollHeight,
+        height: receiptRef.current.scrollHeight,
+        width: receiptRef.current.scrollWidth,
       });
-      
+
       const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+      // A4 dimensions in mm
+      const A4_WIDTH_MM = 210;
+      const A4_HEIGHT_MM = 297;
+
+      // Image dimensions in mm (fit to A4 width)
+      const imgWidthMM = A4_WIDTH_MM;
+      const imgHeightMM = (canvas.height * A4_WIDTH_MM) / canvas.width;
+
+      // If the receipt fits in one page, just use that height
+      const totalPages = Math.ceil(imgHeightMM / A4_HEIGHT_MM);
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
       });
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Receipt_SunarAbhushan_${txnId.slice(-6).toUpperCase()}.pdf`);
+
+      if (totalPages <= 1) {
+        // Single page — set page height to content height so nothing is clipped
+        const pdf2 = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [A4_WIDTH_MM, Math.min(imgHeightMM, A4_HEIGHT_MM * 10)],
+        });
+        pdf2.addImage(imgData, 'JPEG', 0, 0, imgWidthMM, imgHeightMM);
+        pdf2.save(`Receipt_SunarAbhushan_${txnId.slice(-6).toUpperCase()}.pdf`);
+      } else {
+        // Multi-page: slice the canvas into A4-sized segments
+        const pageHeightPx = Math.floor((A4_HEIGHT_MM / A4_WIDTH_MM) * canvas.width);
+
+        for (let page = 0; page < totalPages; page++) {
+          if (page > 0) pdf.addPage();
+
+          const srcY = page * pageHeightPx;
+          const srcH = Math.min(pageHeightPx, canvas.height - srcY);
+
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = srcH;
+          const ctx = pageCanvas.getContext('2d');
+          ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+          const pageImgData = pageCanvas.toDataURL('image/jpeg', 1.0);
+          const pageImgHeightMM = (srcH * A4_WIDTH_MM) / canvas.width;
+          pdf.addImage(pageImgData, 'JPEG', 0, 0, imgWidthMM, pageImgHeightMM);
+        }
+
+        pdf.save(`Receipt_SunarAbhushan_${txnId.slice(-6).toUpperCase()}.pdf`);
+      }
     } catch (err) {
       console.error("Error generating PDF", err);
-      alert("Failed to generate PDF");
+      alert("Failed to generate PDF. Please try again.");
     }
   };
 
@@ -143,14 +192,14 @@ const ReceiptView = ({ txnId }) => {
                 {loan.items.map((it, i) => (
                   <div key={i} className="flex justify-between items-center text-sm border-b border-gray-200/50 pb-2 last:border-0 last:pb-0">
                     <span className="font-semibold text-gray-800">{i+1}. {it.itemName} <span className="text-gray-500 font-normal">[{it.category}]</span></span>
-                    <span className="text-gray-600 font-medium whitespace-nowrap">{(it.netWeight || it.grossWeight) && `W: ${it.netWeight || it.grossWeight}g`}</span>
+                    <span className="text-gray-600 font-medium whitespace-nowrap">{(it.netWeight > 0 || it.grossWeight > 0) ? `W: ${it.netWeight || it.grossWeight}g` : ''}</span>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="flex justify-between items-center text-sm">
                  <span className="font-semibold text-gray-800">{loan.itemId?.itemName || "Item"} <span className="text-gray-500 font-normal">[{loan.itemId?.category || "Unknown"}]</span></span>
-                 <span className="text-gray-600 font-medium whitespace-nowrap">{(loan.itemId?.netWeight || loan.itemId?.grossWeight) && `W: ${loan.itemId?.netWeight || loan.itemId?.grossWeight}g`}</span>
+                 <span className="text-gray-600 font-medium whitespace-nowrap">{(loan.itemId?.netWeight > 0 || loan.itemId?.grossWeight > 0) ? `W: ${loan.itemId?.netWeight || loan.itemId?.grossWeight}g` : ''}</span>
               </div>
             )}
           </div>

@@ -288,6 +288,25 @@ const deleteCustomer = asyncHandler(async (req, res) => {
   res.json({ message: "Customer and all associated records deleted successfully" });
 });
 
+const updateCustomer = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+
+  // We should not allow updating sensitive fields like role or phone (which is a unique identifier)
+  delete updates.role;
+  delete updates.password;
+  
+  if (updates.phone) {
+     const exists = await User.findOne({ phone: updates.phone, _id: { $ne: id } });
+     if (exists) return res.status(409).json({ message: "Phone number already in use by another customer" });
+  }
+
+  const user = await User.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+  if (!user) return res.status(404).json({ message: "Customer not found" });
+
+  res.json({ message: "Customer updated successfully", customer: user });
+});
+
 module.exports = {
   register,
   login,
@@ -298,5 +317,6 @@ module.exports = {
   getCustomers,
   getCustomerProfile,
   getUserSummary,
-  deleteCustomer
+  deleteCustomer,
+  updateCustomer
 };

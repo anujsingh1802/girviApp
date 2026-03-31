@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API_BASE_URL, { API_ENDPOINTS } from '../api';
+import SignatureModal from '../components/SignatureModal';
 
 const CustomerProfile = ({ navigateTo, customerId }) => {
   const [data, setData] = useState(null);
@@ -7,6 +8,8 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
   const [loading, setLoading] = useState(true);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: "", message: "", onConfirm: null, isFinal: false, preventClose: false });
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -14,6 +17,10 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
       try {
         const res = await fetch(API_ENDPOINTS.CUSTOMER_PROFILE(customerId));
         const json = await res.json();
+        
+        if (res.ok && isMounted) {
+          setData(json);
+        }
         
         const sumRes = await fetch(API_ENDPOINTS.USER_SUMMARY(customerId));
         if (sumRes.ok) {
@@ -125,6 +132,57 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
     window.open(url, '_blank');
   };
 
+  const handleUpdateCustomer = async (updates) => {
+    try {
+      setIsUpdating(true);
+      const res = await fetch(`${API_BASE_URL}/api/auth/customer/${customerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      if (res.ok) {
+        const refreshRes = await fetch(API_ENDPOINTS.CUSTOMER_PROFILE(customerId));
+        if (refreshRes.ok) {
+          const updatedJson = await refreshRes.json();
+          setData(updatedJson);
+        }
+      } else {
+        const err = await res.json();
+        alert(err.message || "Failed to update customer.");
+      }
+    } catch (err) {
+      alert("Error updating customer.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setIsUpdating(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`${API_BASE_URL}/api/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+      if (res.ok) {
+        await handleUpdateCustomer({ [type + 'Url']: result.url });
+      } else {
+        alert("Upload failed: " + result.message);
+      }
+    } catch (err) {
+      alert("Error uploading document.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-background rounded-t-[40px] lg:rounded-t-[32px] overflow-hidden">
       {/* Header */}
@@ -184,14 +242,24 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
         {/* Documents */}
         {(customer.aadhaarUrl || customer.panUrl || customer.signatureUrl || (customer.documents && customer.documents.length > 0)) && (
           <div>
-            <h4 className="text-lg font-bold text-textMain mb-4 flex items-center gap-2">
-              <span className="icon text-primary">description</span> 
-              Documents & Signature
+            <h4 className="text-lg font-bold text-textMain mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="icon text-primary">description</span> 
+                Documents & Signature
+              </div>
+              {isUpdating && <span className="text-xs text-primary animate-pulse font-bold">Syncing...</span>}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {customer.aadhaarUrl && (
-                <div className="card p-3 border border-borderBase flex flex-col gap-2 relative">
+              {/* Aadhaar Box */}
+              <div className="card p-3 border border-borderBase flex flex-col gap-2 relative">
+                <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-textMain truncate">Aadhaar Card</span>
+                  <label className="cursor-pointer hover:text-primary transition-colors">
+                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'aadhaar')} disabled={isUpdating} />
+                    <span className="icon text-sm">{customer.aadhaarUrl ? 'edit' : 'add_circle'}</span>
+                  </label>
+                </div>
+                {customer.aadhaarUrl ? (
                   <a href={customer.aadhaarUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-24 bg-gray-100 rounded-lg overflow-hidden relative group">
                     {customer.aadhaarUrl.endsWith('.pdf') ? (
                       <div className="w-full h-full flex flex-col items-center justify-center text-red-500 bg-white">
@@ -201,11 +269,25 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                       <img src={customer.aadhaarUrl} alt="Aadhaar" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     )}
                   </a>
-                </div>
-              )}
-              {customer.panUrl && (
-                <div className="card p-3 border border-borderBase flex flex-col gap-2 relative">
+                ) : (
+                   <label className="block w-full h-24 bg-gray-50 dark:bg-gray-900/40 rounded-lg border-2 border-dashed border-borderBase flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-gray-100 transition-all">
+                      <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'aadhaar')} disabled={isUpdating} />
+                      <span className="icon text-primary/40 text-2xl">cloud_upload</span>
+                      <span className="text-[10px] font-bold text-textMuted uppercase">Upload</span>
+                   </label>
+                )}
+              </div>
+
+              {/* PAN Box */}
+              <div className="card p-3 border border-borderBase flex flex-col gap-2 relative">
+                <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-textMain truncate">PAN Card</span>
+                  <label className="cursor-pointer hover:text-primary transition-colors">
+                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'pan')} disabled={isUpdating} />
+                    <span className="icon text-sm">{customer.panUrl ? 'edit' : 'add_circle'}</span>
+                  </label>
+                </div>
+                {customer.panUrl ? (
                   <a href={customer.panUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-24 bg-gray-100 rounded-lg overflow-hidden relative group">
                     {customer.panUrl.endsWith('.pdf') ? (
                       <div className="w-full h-full flex flex-col items-center justify-center text-red-500 bg-white">
@@ -215,16 +297,38 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
                       <img src={customer.panUrl} alt="PAN" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                     )}
                   </a>
-                </div>
-              )}
-              {customer.signatureUrl && (
-                <div className="card p-3 border border-borderBase flex flex-col gap-2 relative col-span-2 md:col-span-1">
+                ) : (
+                  <label className="block w-full h-24 bg-gray-50 dark:bg-gray-900/40 rounded-lg border-2 border-dashed border-borderBase flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-gray-100 transition-all">
+                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'pan')} disabled={isUpdating} />
+                    <span className="icon text-primary/40 text-2xl">cloud_upload</span>
+                    <span className="text-[10px] font-bold text-textMuted uppercase">Upload</span>
+                  </label>
+                )}
+              </div>
+
+              {/* Signature Box */}
+              <div className="card p-3 border border-borderBase flex flex-col gap-2 relative">
+                <div className="flex justify-between items-center">
                   <span className="text-xs font-bold text-textMain truncate">Customer Signature</span>
-                  <div className="block w-full h-24 bg-white rounded-lg overflow-hidden relative group border border-borderBase/50 p-1">
-                    <img src={customer.signatureUrl} alt="Signature" className="w-full h-full object-contain" />
-                  </div>
+                  <button onClick={() => setIsSignatureModalOpen(true)} className="hover:text-primary transition-colors disabled:opacity-50" disabled={isUpdating}>
+                    <span className="icon text-sm">{customer.signatureUrl ? 'edit' : 'add_circle'}</span>
+                  </button>
                 </div>
-              )}
+                {customer.signatureUrl ? (
+                  <a href={customer.signatureUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-24 bg-gray-100 rounded-lg overflow-hidden relative group border border-borderBase/50 p-1">
+                    <img src={customer.signatureUrl} alt="Signature" className="w-full h-full object-contain transition-transform group-hover:scale-110" />
+                  </a>
+                ) : (
+                   <button 
+                     onClick={() => setIsSignatureModalOpen(true)} 
+                     disabled={isUpdating}
+                     className="block w-full h-24 bg-gray-50 dark:bg-gray-900/40 rounded-lg border-2 border-dashed border-borderBase flex flex-col items-center justify-center gap-1 hover:bg-gray-100 transition-all"
+                   >
+                     <span className="icon text-primary/40 text-2xl">draw</span>
+                     <span className="text-[10px] font-bold text-textMuted uppercase">Capture</span>
+                   </button>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -457,6 +561,37 @@ const CustomerProfile = ({ navigateTo, customerId }) => {
           </div>
         </div>
       )}
+
+      <SignatureModal 
+        isOpen={isSignatureModalOpen}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSave={async (dataURL) => {
+          try {
+            setIsUpdating(true);
+            const blob = await (await fetch(dataURL)).blob();
+            const file = new File([blob], "signature.png", { type: "image/png" });
+            
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch(`${API_BASE_URL}/api/upload`, {
+              method: "POST",
+              body: formData,
+            });
+            const result = await res.json();
+            if (res.ok) {
+              await handleUpdateCustomer({ signatureUrl: result.url });
+              setIsSignatureModalOpen(false);
+            } else {
+              alert("Upload failed: " + result.message);
+            }
+          } catch (err) {
+            alert("Error saving signature.");
+          } finally {
+            setIsUpdating(false);
+          }
+        }}
+      />
 
     </div>
   );
