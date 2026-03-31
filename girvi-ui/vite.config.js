@@ -76,4 +76,30 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'vendor-react',
+              test: (id) => id.includes('node_modules/react') || id.includes('node_modules/react-dom'),
+            },
+            {
+              name: 'vendor-jspdf',
+              test: (id) => id.includes('node_modules/jspdf'),
+            },
+            {
+              name: 'vendor-html2canvas',
+              test: (id) => id.includes('node_modules/html2canvas'),
+            },
+            {
+              name: 'vendor-common',
+              test: (id) => id.includes('node_modules'),
+            },
+          ],
+        },
+      },
+    },
+  },
 })
