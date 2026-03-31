@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import BottomNav from './components/BottomNav';
 import Fab from './components/Fab';
+import InstallPrompt from './components/InstallPrompt';
 import Home from './pages/Home';
 import Customers from './pages/Customers';
 import CustomerProfile from './pages/CustomerProfile';
@@ -64,7 +65,7 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <div className="views-container pb-20">
+      <div className="views-container">
         <div className="animate-in fade-in zoom-in-95 duration-200 h-full">
           {currentView === 'home' && <Home navigateTo={navigateTo} />}
           {currentView === 'customers' && <Customers navigateTo={navigateTo} setSelectedCustomer={setSelectedCustomer} />}
@@ -83,6 +84,7 @@ export default function App() {
 
       {showFab && <Fab isFabOpen={isFabOpen} setIsFabOpen={setIsFabOpen} navigateTo={navigateTo} />}
       {showNav && <BottomNav currentView={currentView} navigateTo={navigateTo} />}
+      <InstallPrompt />
     </div>
   );
 }

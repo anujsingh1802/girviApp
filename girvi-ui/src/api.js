@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const envApiBase = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = envApiBase || 'https://girviapp.onrender.com';
 
 export const API_ENDPOINTS = {
   CUSTOMERS: `${API_BASE_URL}/api/auth/customers`,

@@ -13,6 +13,9 @@
     --color-textMuted: #6b7280;
     --color-border: #e5e7eb;
     --color-body-bg: #e5e7eb;
+    /* Safe area insets for notched phones */
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-height: 70px;
   }
   .dark {
     --color-background: #121212;
@@ -23,20 +26,36 @@
     --color-body-bg: #000000;
   }
 
+  html {
+    /* Use dynamic viewport height - fixes mobile browser address-bar issues */
+    height: -webkit-fill-available;
+  }
+
   body {
-    @apply bg-[var(--color-body-bg)] min-h-screen text-textMain antialiased transition-colors duration-300;
+    @apply bg-[var(--color-body-bg)] text-textMain antialiased transition-colors duration-300;
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Prevent pull-to-refresh on installed PWA */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 @layer components {
   .app-container {
-    @apply w-full h-screen bg-background relative overflow-hidden flex flex-col transition-colors duration-300;
+    @apply w-full bg-background relative flex flex-col transition-colors duration-300 overflow-hidden;
+    height: 100vh;
+    height: 100dvh;
   }
+
   .views-container {
-    @apply flex-1 relative overflow-x-hidden overflow-y-auto bg-background pb-28 pt-0 transition-colors duration-300;
+    @apply flex-1 relative overflow-x-hidden overflow-y-auto bg-background transition-colors duration-300;
+    /* Bottom padding = nav height + safe-area inset so content never hides behind nav */
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 1.5rem);
   }
+
   .view-padding {
-    @apply px-5 md:px-12 lg:px-24 w-full;
+    @apply px-4 sm:px-5 md:px-12 lg:px-24 w-full;
   }
   .card {
     @apply bg-card rounded-[16px] p-5 shadow-soft border border-[var(--color-border)] transition-colors duration-300;
@@ -75,14 +94,35 @@
    font-variation-settings: 'FILL' 0;
 }
 
-/* Custom Scrollbar */
-.views-container::-webkit-scrollbar {
-  width: 8px;
+/* Custom Scrollbar – desktop only */
+@media (hover: hover) and (pointer: fine) {
+  .views-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  .views-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .views-container::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 10px;
+  }
 }
-.views-container::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Hide scrollbars on mobile/touch */
+@media (hover: none) {
+  .views-container {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .views-container::-webkit-scrollbar {
+    display: none;
+  }
 }
-.views-container::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
-  border-radius: 10px;
+
+/* PWA Standalone mode – hide browser chrome remnants */
+@media (display-mode: standalone) {
+  body {
+    user-select: none;
+  }
 }
+
