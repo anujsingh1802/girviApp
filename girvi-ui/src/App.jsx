@@ -15,12 +15,8 @@ import Report from './pages/Report';
 import ItemsManagement from './pages/ItemsManagement';
 import Transactions from './pages/Transactions';
 import ReceiptView from './pages/ReceiptView';
-import AccessLock from './components/AccessLock';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('girvi_auth_pin') === 'true';
-  });
   const [currentView, setCurrentView] = useState('home');
   const [navParams, setNavParams] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -48,15 +44,6 @@ export default function App() {
   const viewsWithoutNav = ['add-customer', 'add-loan', 'add-payment', 'report', 'loans', 'customer-profile', 'items-management', 'transactions'];
   const showNav = !viewsWithoutNav.includes(currentView);
   const showFab = ['home'].includes(currentView);
-
-  if (!isAuthenticated) {
-    return (
-      <AccessLock onUnlock={() => {
-        localStorage.setItem('girvi_auth_pin', 'true');
-        setIsAuthenticated(true);
-      }} />
-    );
-  }
 
   if (window.location.pathname.startsWith('/receipt/')) {
     const txnId = window.location.pathname.split('/receipt/')[1];

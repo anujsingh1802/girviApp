@@ -122,7 +122,7 @@ const Home = ({ navigateTo }) => {
             <div className="flex items-center gap-2 text-white">
               <span className="icon text-accentYellow text-2xl md:text-3xl">diamond</span>
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-wide leading-tight">
-                GIRVI <span className="font-normal opacity-90 text-xs sm:text-sm md:text-base">(सुनार आभूषण)</span>
+                GIRVI <span className="font-normal opacity-90 text-xs sm:text-sm md:text-base">(Prototype for सुनार आभूषण)</span>
               </h1>
             </div>
             <button
